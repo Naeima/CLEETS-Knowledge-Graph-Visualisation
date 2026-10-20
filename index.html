@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive visualisations of CLEETS-KG, the CLEETS knowledge graph of electric-vehicle adoption and charging in Welsh local authority districts: a dataset map in VOWL notation and an explorer of every entity in the graph.">
+<title>CLEETS-KG Visualisations</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Semi+Condensed:wght@500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --band:#f6f8fa; --ink:#15191e; --ink-2:#47515c; --ink-3:#6a7480; --line:#d5dbe1; --line-2:#aab4bf;
+  --f-display:"Barlow Semi Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0d1115; --surface:#141920; --band:#1a2027; --ink:#e9edf1; --ink-2:#b7c0ca; --ink-3:#8b96a2; --line:#2a323b; --line-2:#4a5561; color-scheme:dark; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--f-body)}
+.wrap{max-width:960px;margin:0 auto;padding:40px clamp(16px,3vw,32px) 48px}
+h1,h2,p{margin:0}
+.eyebrow{font:500 13px var(--f-mono);color:var(--ink-3);margin-bottom:6px}
+h1{font:600 clamp(28px,4vw,38px)/1.1 var(--f-display);letter-spacing:.005em;text-wrap:balance}
+.lede{color:var(--ink-2);max-width:68ch;margin-top:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:32px}
+a.card{display:block;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px 22px;color:inherit;text-decoration:none}
+a.card:hover{border-color:var(--line-2)}
+a.card h2{font:600 22px/1.2 var(--f-display)}
+a.card h2 span{color:var(--ink-3);font-weight:500}
+a.card p{color:var(--ink-2);margin-top:8px;font-size:15px}
+a.card .go{display:inline-block;margin-top:14px;font:500 14px/1 var(--f-display);letter-spacing:.01em;color:var(--ink);border:1px solid var(--line-2);border-radius:7px;padding:8px 12px}
+.meta{margin-top:32px;color:var(--ink-3);font-size:14px;max-width:80ch}
+.meta a{color:inherit;text-underline-offset:2px}
+code{font-family:var(--f-mono);font-size:.9em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">CLEETS-KG v1.3.0 · 96,479 triples</p>
+  <h1>CLEETS knowledge graph, drawn two ways</h1>
+  <p class="lede">CLEETS-KG integrates eight public datasets on electric-vehicle keepership, public charging devices, population, geography and deprivation for the local authority districts of Wales (with population density for England too) under one ontology. These two pages show the graph from different distances; both are generated from the same Turtle file and cross-checked against it.</p>
+  <div class="cards">
+    <a class="card" href="dataset-map.html">
+      <h2>Dataset map <span>· the ontology and its sources</span></h2>
+      <p>How each dataset populates the CLEETS ontology, drawn in VOWL notation (classes, properties, datatypes) with the dataset records and derivations attached, or as a fixed schematic. Choose a dataset to trace it through the graph.</p>
+      <span class="go">Open the dataset map</span>
+    </a>
+    <a class="card" href="entity-explorer.html">
+      <h2>Entity explorer <span>· every individual in the data</span></h2>
+      <p>All 17,068 entities and 51,838 links on one canvas: observations, districts, quarters, population figures, dataset records, agents. Search for an entity, read its properties, follow its links, or highlight what one dataset contributes.</p>
+      <span class="go">Open the entity explorer</span>
+    </a>
+  </div>
+  <p class="meta">Built from <code>index.ttl</code> in <a href="https://github.com/Naeima/cleets">github.com/Naeima/cleets</a> at commit b4c61d3 (16 September 2026). The ontology documentation is at <a href="https://naeima.github.io/cleets/OnToology/index.ttl/documentation/index-en.html">naeima.github.io/cleets</a>; the build scripts, verification and references are in <a href="https://github.com/Naeima/CLEETS-Knowledge-Graph-Visualisation">this repository</a>.</p>
+</div>
+</body>
+</html>

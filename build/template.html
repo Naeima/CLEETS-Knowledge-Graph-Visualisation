@@ -1,0 +1,1215 @@
+<title>CLEETS-KG Dataset Map</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Semi+Condensed:wght@500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+/* Layout: dataset tabs, a short reading of the selection, the graph (VOWL notation, force-directed) with a detail sidebar,
+   an alternative schematic view, then detail cards. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --band:#f6f8fa; --node:#ffffff;
+  --ink:#15191e; --ink-2:#47515c; --ink-3:#6a7480; --line:#d5dbe1; --line-2:#aab4bf; --edge:#586370;
+  --tip-bg:#15191e; --tip-ink:#f2f5f7; --tip-dim:#aeb8c2; --fade:#dfe4e9; --mid:#9ba6b1;
+  --f-display:"Barlow Semi Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  /*__PALETTE_LIGHT__*/
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1115; --surface:#141920; --band:#1a2027; --node:#222a33;
+    --ink:#e9edf1; --ink-2:#b7c0ca; --ink-3:#8b96a2; --line:#2a323b; --line-2:#4a5561; --edge:#98a3af;
+    --tip-bg:#e9edf1; --tip-ink:#15191e; --tip-dim:#4d5762; --fade:#272f38; --mid:#5f6a77;
+    /*__PALETTE_DARK__*/
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1115; --surface:#141920; --band:#1a2027; --node:#222a33;
+  --ink:#e9edf1; --ink-2:#b7c0ca; --ink-3:#8b96a2; --line:#2a323b; --line-2:#4a5561; --edge:#98a3af;
+  --tip-bg:#e9edf1; --tip-ink:#15191e; --tip-dim:#4d5762; --fade:#272f38; --mid:#5f6a77;
+  /*__PALETTE_DARK__*/
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-body);-webkit-text-size-adjust:100%}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:clamp(16px,2.4vw,32px);padding-block:24px 44px;display:flex;flex-direction:column;gap:14px}
+h1,h2,h3,p,dl,dd,ul,figure,blockquote,pre{margin:0}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--band);border:1px solid var(--line);border-radius:4px;padding:.04em .32em;overflow-wrap:anywhere}
+a{color:inherit;text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 40px}
+.top>div{display:flex;flex-direction:column;gap:5px}
+.eyebrow{font:500 12.5px var(--f-mono);color:var(--ink-3)}
+h1{font:600 clamp(24px,3vw,32px)/1.1 var(--f-display);letter-spacing:.005em;text-wrap:balance}
+.lede{flex:1 1 380px;max-width:66ch;color:var(--ink-2)}
+
+/* tabs */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;padding-block:8px;background:var(--bg)}
+@media (min-width:900px){.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5}}
+.tab{font:500 14.5px/1 var(--f-display);letter-spacing:.01em;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);
+  border-radius:7px;padding:8px 12px 8px 10px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.tab:hover{border-color:var(--line-2);color:var(--ink)}
+.tab .dot,.chip .dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.tab.all .dot{background:none;border:1.5px solid currentColor}
+.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.tab[aria-selected="true"] .dot{box-shadow:0 0 0 1.5px var(--ink),0 0 0 3px var(--surface)}
+
+/* reading of the selection */
+.strip{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px 16px;display:flex;flex-direction:column;gap:10px}
+.strip-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.strip-head h2{font:600 20px/1.2 var(--f-display);display:inline-flex;align-items:center;gap:8px}
+.strip-head h2 .dot{width:11px;height:11px;border-radius:50%;background:var(--c);flex:none}
+.strip-head p{color:var(--ink-2);font-size:14px;min-width:0}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:10px 28px}
+.fact{min-width:0}
+.fact dt,.lab{font:600 11.5px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.fact dd{font-size:14.5px;line-height:1.45}
+
+/* the map */
+.map{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.maptools{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;padding:8px 12px 8px 18px;border-bottom:1px solid var(--line)}
+.maptools p{font-size:13.5px;color:var(--ink-3);min-width:0}
+.zoom{display:inline-flex;align-items:center;gap:4px}
+.zoom button{font:500 13.5px/1 var(--f-display);color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:6px;min-width:32px;height:30px;padding:0 9px;cursor:pointer}
+.zoom button:hover:not(:disabled){border-color:var(--line-2);color:var(--ink)}
+.zoom button:disabled{opacity:.4;cursor:default}
+.zoom output{font:500 12px var(--f-mono);color:var(--ink-3);min-width:44px;text-align:center}
+.canvas{overflow:auto;background:var(--surface)}
+.canvas.zoomed{max-height:86vh;cursor:grab}
+.canvas.dragging{cursor:grabbing;user-select:none}
+#kg{display:block;height:auto;margin-inline:auto}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;padding:12px 18px 14px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-2)}
+.legend>span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.legend svg{flex:none}
+.legend .note{display:block;flex-basis:100%;white-space:normal;color:var(--ink-3)}
+
+/* svg parts */
+.kgsvg text{font-family:var(--f-display);fill:var(--ink)}
+.band rect{fill:var(--band)}
+.band .bt{font-weight:600;font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;fill:var(--ink-2)}
+.band .bs{font-size:11px;fill:var(--ink-3);font-family:var(--f-body)}
+.e .hit{fill:none;stroke:transparent;stroke-width:13;pointer-events:stroke}
+.e .ln{fill:none;stroke:var(--c,var(--edge));stroke-width:1.3;stroke-linejoin:round}
+.e.k-source .ln,.e.k-used .ln{stroke-width:1.7}
+.e.k-type .ln{stroke-dasharray:3.5 3;stroke-width:1.1}
+.e.k-imp .ln{stroke-dasharray:1.5 3.5;stroke-linecap:round}
+.e.k-eq .ln{stroke-width:4.4}
+.e.k-eq .ln2{fill:none;stroke:var(--band);stroke-width:1.8}
+.e .hd.arrow{fill:var(--c,var(--edge))}
+.e .hd.tri{fill:var(--band);stroke:var(--edge);stroke-width:1.2;stroke-linejoin:round}
+.e:hover .ln,.e.inc .ln{stroke-width:2.4}
+.e.k-eq:hover .ln,.e.k-eq.inc .ln{stroke-width:5.2}
+.has-sel .e.inc:not(.on):not(.ctx) .ln{stroke:var(--mid)}
+.has-sel .e.inc:not(.on):not(.ctx) .hd.arrow{fill:var(--mid)}
+.kgsvg .el{font-size:10px;fill:var(--ink-2);paint-order:stroke;stroke:var(--band);stroke-width:3.4px;stroke-linejoin:round;pointer-events:none}
+.kgsvg .el.sym{font-size:13px;font-weight:600}
+.n{cursor:default}
+.n.dataset{cursor:pointer}
+.n .box{fill:var(--t,var(--node));stroke:var(--c,var(--line-2));stroke-width:1.4}
+.n.dataset .box{stroke-width:1.6}
+.n.dataset .dot{fill:var(--c)}
+.n.group.hub .box{stroke-width:2}
+.n.class .box{fill:var(--node);stroke:var(--ink-2);stroke-width:1.25}
+.n.ext .box{fill:var(--band);stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:4 3}
+.n.ext .t{fill:var(--ink-2);font-weight:500}
+.n.activity .box{fill:var(--node);stroke:var(--ink-2);stroke-width:1.3}
+.n.activity .t{font-style:italic;font-weight:600;font-size:13px}
+.n .t{font-weight:600;font-size:12.5px}
+.n .s{font-size:10.2px;fill:var(--ink-2);font-family:var(--f-body)}
+.n .cnt{font-family:var(--f-mono);font-size:10.2px;fill:var(--ink-2)}
+.n.oplist .box{fill:var(--node);stroke:var(--line-2);stroke-width:1.1}
+.n.oplist .oh{font-size:9.6px;letter-spacing:.07em;text-transform:uppercase;fill:var(--ink-3);font-weight:600}
+.n .oprow text{font-size:10.3px;font-family:var(--f-body);fill:var(--ink)}
+.oprow .hitr{fill:transparent}
+.oprow .mk{fill:var(--ink-2);stroke:var(--ink-2);stroke-width:1.1}
+.oprow.data .mk{fill:var(--node)}
+.n .oprow.unused text{fill:var(--ink-3);font-style:italic}
+.n:hover .box,.n:focus-visible .box{stroke-width:2.4}
+.n:focus-visible{outline:none}
+.n.sel .box{stroke-width:3}
+#kg .n,#kg .e,#kg .el,#kg .oprow{transition:opacity .18s ease}
+.has-sel .n:not(.on):not(.ctx),.has-sel .el:not(.on):not(.ctx){opacity:.13}
+.has-sel .n.ctx,.has-sel .el.ctx,.has-sel .e.ctx.col{opacity:.5}
+.has-sel .e:not(.on):not(.ctx) .ln{stroke:var(--fade)}
+.has-sel .e:not(.on):not(.ctx) .hd.arrow{fill:var(--fade)}
+.has-sel .e:not(.on):not(.ctx) .hd.tri{stroke:var(--fade)}
+.has-sel .e.ctx:not(.col) .ln{stroke:var(--mid)}
+.has-sel .e.ctx:not(.col) .hd.arrow{fill:var(--mid)}
+.has-sel .e.ctx:not(.col) .hd.tri{stroke:var(--mid)}
+.has-sel .n.oplist.on .oprow:not(.on){opacity:.28}
+@media (prefers-reduced-motion:reduce){#kg .n,#kg .e,#kg .el,#kg .oprow{transition:none}}
+
+/* tooltip */
+.tip{position:fixed;z-index:20;max-width:min(370px,calc(100vw - 16px));background:var(--tip-bg);color:var(--tip-ink);border-radius:9px;padding:10px 12px 11px;
+  font-size:13px;line-height:1.4;pointer-events:none;box-shadow:0 6px 22px rgba(0,0,0,.22)}
+.tip .k{font:600 10.5px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--tip-dim)}
+.tip .t{font:500 12.5px/1.35 var(--f-mono);margin:2px 0 5px;overflow-wrap:anywhere}
+.tip ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:3px}
+.tip li{overflow-wrap:anywhere}
+
+/* detail cards */
+.detail{display:flex;flex-direction:column;gap:14px}
+.cols{columns:2 430px;column-gap:14px}
+.cols .card{break-inside:avoid;margin-bottom:14px}
+.cols .card:last-child{margin-bottom:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card>h2{font:600 18px/1.2 var(--f-display)}
+.card>h2 small{font:400 13px var(--f-body);color:var(--ink-3);margin-left:8px}
+.card .lead{color:var(--ink-2);max-width:72ch}
+.kv{display:grid;grid-template-columns:minmax(92px,max-content) minmax(0,1fr);gap:6px 16px;font-size:14.5px}
+.kv dt{color:var(--ink-3);font-size:13.5px;padding-top:1px}
+.kv dd{min-width:0;overflow-wrap:anywhere}
+.block{display:flex;flex-direction:column;gap:8px}
+.block+.block{border-top:1px solid var(--line);padding-top:12px}
+.block h3,.item h3{font:600 15.5px/1.3 var(--f-display)}
+.item{display:flex;flex-direction:column;gap:5px}
+.item+.item{border-top:1px solid var(--line);padding-top:12px}
+.item p{color:var(--ink-2);font-size:14.5px}
+.quote{border-left:2px solid var(--line-2);padding:2px 0 2px 12px;font-size:13.5px;color:var(--ink-2)}
+.quote cite{display:block;font-style:normal;font-size:12px;color:var(--ink-3);margin-top:3px;font-family:var(--f-mono)}
+.quote,.item h3,.block h3,.item p,.card .lead,.fact dd,.strip-head p,.bullets li,.foot,.cite{overflow-wrap:anywhere}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+caption{caption-side:top;text-align:left;font-size:13px;color:var(--ink-3);padding-bottom:6px}
+th,td{text-align:left;padding:6px 14px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11.5px/1.3 var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+tbody tr:last-child td,tbody tr:last-child th{border-bottom:0}
+.terms{list-style:none;padding:0;display:flex;flex-direction:column;gap:10px}
+.terms li{display:grid;grid-template-columns:minmax(92px,max-content) minmax(0,1fr);gap:2px 16px}
+.terms .role{color:var(--ink-3);font-size:13.5px;padding-top:2px}
+.terms .chain{font:500 13px/1.5 var(--f-mono);overflow-wrap:anywhere}
+.terms .note{grid-column:2;color:var(--ink-2);font-size:13.5px}
+.bullets{padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink-2);font-size:14.5px}
+.foot{color:var(--ink-3);font-size:13.5px}
+.links{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px}
+.cite{font-size:13.5px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px}
+.codewrap{display:flex;flex-direction:column;gap:6px}
+.codecap{font-size:13px;color:var(--ink-3)}
+pre.code{font:400 12.5px/1.55 var(--f-mono);background:var(--band);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre;tab-size:4}
+.chip{font:500 13.5px/1 var(--f-display);color:var(--ink);background:var(--surface);border:1px solid var(--line-2);border-radius:6px;padding:3px 7px 3px 6px;
+  display:inline-flex;align-items:center;gap:5px;cursor:pointer;vertical-align:baseline}
+.chip:hover{border-color:var(--ink-2)}
+.chip .dot{width:8px;height:8px}
+footer{font-size:13px;color:var(--ink-3);max-width:90ch}
+@media (max-width:560px){
+  .kv,.terms li{grid-template-columns:1fr;gap:1px}
+  .terms .note{grid-column:1}
+  .kv dd{margin-bottom:6px}
+}
+
+/* ---------- VOWL view (node-link, WebVOWL notation) ---------- */
+.viewbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;color:var(--ink-3)}
+.viewbar .lab{margin:0}
+.vbnote{color:var(--ink-3);min-width:0}
+.vblink{margin-left:auto;font:500 13.5px/1 var(--f-display);letter-spacing:.01em;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:8px 12px;text-decoration:none;white-space:nowrap}
+.vblink:hover{border-color:var(--line-2);color:var(--ink)}
+.views{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.views button{font:500 13.5px/1 var(--f-display);letter-spacing:.01em;color:var(--ink-2);background:var(--surface);border:0;padding:8px 12px;cursor:pointer}
+.views button+button{border-left:1px solid var(--line)}
+.views button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.vowl{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.vtools{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px 16px;padding:8px 12px 8px 14px;border-bottom:1px solid var(--line)}
+.vtools .grp{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}
+.vtools button.tb{font:500 13.5px/1 var(--f-display);color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:6px;min-width:32px;height:30px;padding:0 10px;cursor:pointer}
+.vtools button.tb:hover:not(:disabled){border-color:var(--line-2);color:var(--ink)}
+.vtools button.tb:disabled{opacity:.4;cursor:default}
+.vtools output{font:500 12px var(--f-mono);color:var(--ink-3);min-width:44px;text-align:center}
+.vopts{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;padding:7px 14px;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink-2)}
+.vopts .lab{margin:0 2px 0 0}
+.vopts label{display:inline-flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap}
+.vopts input{margin:0;accent-color:var(--ink)}
+.vopts .sep{width:1px;height:16px;background:var(--line)}
+.vbody{display:grid;grid-template-columns:minmax(0,1fr) 264px;min-height:420px}
+@media (max-width:980px){.vbody{grid-template-columns:1fr}}
+.vcanvas{position:relative;background:#fff;min-width:0;height:min(760px,80vh);border-right:1px solid var(--line);touch-action:pan-y pinch-zoom;overflow:hidden}
+@media (max-width:980px){.vcanvas{border-right:0;border-bottom:1px solid var(--line);height:min(520px,70vh)}}
+.vcanvas svg{display:block;width:100%;height:100%;cursor:grab}
+.vcanvas svg.panning{cursor:grabbing}
+.vhint{position:absolute;left:10px;bottom:8px;margin:0;font:400 11.5px/1.3 var(--f-body);color:#6a7480;background:rgba(255,255,255,.85);padding:3px 7px;border-radius:5px;pointer-events:none}
+.vcopy{position:absolute;inset:auto 10px 10px 10px;display:flex;flex-direction:column;gap:6px;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);border-radius:8px;padding:10px;box-shadow:0 6px 22px rgba(0,0,0,.2);font-size:13px}
+.vcopy textarea{width:100%;height:120px;font:11px var(--f-mono);resize:vertical}
+.vcopy .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.vside{padding:14px 16px 18px;overflow:auto;max-height:min(760px,80vh);font-size:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+@media (max-width:980px){.vside{max-height:none}}
+.vside .k{font:600 11px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.vside h2{font:600 17px/1.25 var(--f-display);overflow-wrap:anywhere}
+.vside .iri{font:400 12px/1.4 var(--f-mono);overflow-wrap:anywhere;color:var(--ink-2)}
+.vside .cmt{color:var(--ink-2);font-size:13.5px}
+.vside dl{display:grid;grid-template-columns:minmax(72px,34%) minmax(0,1fr);gap:4px 12px;font-size:13.5px}
+.vside dt{color:var(--ink-3)}
+.vside dd{overflow-wrap:anywhere}
+.vside h3{font:600 11px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin-top:4px}
+.vside ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13.5px}
+.vside li{overflow-wrap:anywhere}
+.vside button.go{font:inherit;color:inherit;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line-2)}
+.vside button.go:hover{text-decoration-color:var(--ink)}
+.vside .stat{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13.5px}
+.vside .stat b{display:block;font:600 18px/1.1 var(--f-display)}
+.vside .stat span{color:var(--ink-3);font-size:12px}
+.vlegend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 16px 12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2);background:var(--surface)}
+.vlegend>span{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.vlegend svg{flex:none}
+.vlegend .note{display:block;flex-basis:100%;white-space:normal;color:var(--ink-3)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1>CLEETS-KG dataset map</h1>
+    </div>
+    <p class="lede">The CLEETS ontology and the datasets behind CLEETS-KG as a node-link graph in VOWL notation: classes, the properties that relate them, their datatypes, and the dataset records each class is built from. Choose a dataset to trace it through the graph.</p>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Datasets modelled in CLEETS-KG"></div>
+
+  <section class="strip" id="strip" aria-live="polite"></section>
+
+
+  <div class="viewbar">
+    <span class="lab">View</span>
+    <div class="views" role="group" aria-label="View">
+      <button type="button" id="view-graph" aria-pressed="true">Graph (VOWL)</button>
+      <button type="button" id="view-schematic" aria-pressed="false">Schematic</button>
+    </div>
+    <span class="vbnote">The graph is force-directed and editable by dragging; the schematic is a fixed wiring diagram of the same facts.</span>
+    <a class="vblink" href="__ENTITIES_URL__" target="_blank" rel="noopener">Entity explorer: every individual in the data<span aria-hidden="true"> &rarr;</span></a>
+  </div>
+  <figure class="vowl" id="vowl">
+    <div class="vtools">
+      <div class="grp">
+        <button type="button" class="tb" id="vrelease" title="Let pinned nodes move again">Release pins</button>
+        <button type="button" class="tb" id="vrelayout" title="Run the force layout again from scratch">Re-run layout</button>
+        <button type="button" class="tb" id="vcopy" title="Copy the drawing as SVG markup">Copy SVG</button>
+      </div>
+      <div class="grp" role="group" aria-label="Zoom the graph">
+        <button type="button" class="tb" id="vzout" aria-label="Zoom out">−</button>
+        <output id="vzval">100%</output>
+        <button type="button" class="tb" id="vzin" aria-label="Zoom in">+</button>
+        <button type="button" class="tb" id="vfit">Fit</button>
+      </div>
+    </div>
+    <div class="vopts" id="vopts">
+      <span class="lab">Show</span>
+      <label><input type="checkbox" id="f-datatype" checked> datatype properties</label>
+      <label><input type="checkbox" id="f-subclass" checked> subclass relations</label>
+      <label><input type="checkbox" id="f-disjoint"> disjointness</label>
+      <label><input type="checkbox" id="f-thing" checked> properties without a domain or range</label>
+      <label><input type="checkbox" id="f-data" checked> datasets and derivations</label>
+      <span class="sep"></span>
+      <label><input type="checkbox" id="o-scale" checked> size classes by individuals</label>
+      <label><input type="checkbox" id="o-compact"> compact notation</label>
+      <span class="sep"></span>
+      <span class="lab">Labels</span>
+      <label><input type="radio" name="o-labels" id="o-names" value="names" checked> rdfs:label</label>
+      <label><input type="radio" name="o-labels" id="o-ids" value="ids"> identifiers</label>
+    </div>
+    <div class="vbody">
+      <div class="vcanvas" id="vcanvas">
+        <svg id="vsvg" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="CLEETS-KG drawn in VOWL notation: classes as circles, datatypes as rectangles, properties as labelled arrows, with the dataset records and derivations that populate the ontology."></svg>
+        <p class="vhint">Drag a node to move and pin it; click its pin or double-click it to release. Drag the background to pan, Ctrl + scroll or pinch to zoom.</p>
+        <div class="vcopy" id="vcopybox" hidden>
+          <div class="row"><span id="vcopymsg">SVG markup</span><button type="button" class="tb" id="vcopyclose">Close</button></div>
+          <textarea id="vcopytext" readonly aria-label="SVG markup of the graph"></textarea>
+        </div>
+      </div>
+      <aside class="vside" id="vside" aria-live="polite"></aside>
+    </div>
+    <figcaption class="vlegend" id="vlegend">
+      <span><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="#acf" stroke="#000" stroke-width="1.6"/></svg>class</span>
+      <span><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="#36c" stroke="#000" stroke-width="1.6"/></svg>external class</span>
+      <span><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="#fff" stroke="#000" stroke-width="1.6"/><circle cx="11" cy="11" r="6" fill="#acf" stroke="#000" stroke-width="1.6"/></svg>equivalent classes</span>
+      <span><svg width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="#fff" stroke="#000" stroke-width="1.6" stroke-dasharray="4 2"/></svg>owl:Thing</span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><rect x="1" y="2" width="28" height="12" fill="#fc3" stroke="#000" stroke-width="1.4"/></svg>datatype</span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><rect x="1" y="2" width="28" height="12" fill="#fc3" stroke="#000" stroke-width="1.4" stroke-dasharray="4 2"/></svg>literal</span>
+      <span><svg width="46" height="16" viewBox="0 0 46 16"><path d="M1,8H37" stroke="#000" stroke-width="1.6"/><polygon points="45,8 36,3.5 36,12.5" fill="#000"/><rect x="10" y="2" width="20" height="12" fill="#acf"/></svg>object property</span>
+      <span><svg width="46" height="16" viewBox="0 0 46 16"><path d="M1,8H37" stroke="#000" stroke-width="1.6"/><polygon points="45,8 36,3.5 36,12.5" fill="#000"/><rect x="10" y="2" width="20" height="12" fill="#9c6"/></svg>datatype property</span>
+      <span><svg width="46" height="16" viewBox="0 0 46 16"><path d="M1,8H36" stroke="#000" stroke-width="1.6" stroke-dasharray="3 2"/><polygon points="45,8 36,3.5 36,12.5" fill="#fff" stroke="#000" stroke-width="1.4"/><rect x="10" y="2" width="20" height="12" fill="#fff" stroke="#bbb" stroke-width="1"/></svg>subclass of</span>
+      <span><svg width="46" height="16" viewBox="0 0 46 16"><path d="M1,8H45" stroke="#000" stroke-width="1.6" stroke-dasharray="6 3"/><rect x="11" y="1" width="24" height="14" fill="#acf"/><circle cx="19" cy="8" r="4" fill="#69c" stroke="#000" stroke-width="1"/><circle cx="27" cy="8" r="4" fill="#69c" stroke="#000" stroke-width="1"/></svg>disjoint classes</span>
+      <span><svg width="30" height="18" viewBox="0 0 30 18"><rect x="1" y="2" width="28" height="14" rx="4" style="fill:var(--d1t);stroke:var(--d1);stroke-width:1.6"/><circle cx="8" cy="9" r="2.6" style="fill:var(--d1)"/></svg>dataset record</span>
+      <span><svg width="18" height="18" viewBox="0 0 18 18"><polygon points="9,1 17,9 9,17 1,9" fill="#fff" stroke="#000" stroke-width="1.5"/></svg>derivation</span>
+      <span><svg width="46" height="16" viewBox="0 0 46 16"><path d="M1,8H37" style="stroke:var(--d1);stroke-width:1.6"/><polygon points="45,8 36,3.5 36,12.5" style="fill:var(--d1)"/></svg><code>dcterms:source</code>, <code>prov:used</code>, <code>prov:wasGeneratedBy</code></span>
+      <span class="note">Notation after VOWL 2 as drawn by WebVOWL: class circles grow with their number of individuals, equivalent external classes share one circle, a property end with no declared domain or range is attached to its own <code>owl:Thing</code>, and each datatype property gets its own datatype box. Dataset records and derivations are an addition for the knowledge graph. Click a node or a label for its details.</span>
+    </figcaption>
+  </figure>
+
+  <figure class="map" hidden>
+    <div class="maptools">
+      <p>Pick a dataset in the tabs or in the map. Point at or tap any node or line for its definition and counts.</p>
+      <div class="zoom" role="group" aria-label="Zoom the map">
+        <button type="button" id="zout" aria-label="Zoom out">−</button>
+        <output id="zval">100%</output>
+        <button type="button" id="zin" aria-label="Zoom in">+</button>
+        <button type="button" id="zfit">Fit</button>
+      </div>
+    </div>
+    <div class="canvas" id="canvas"><svg id="kg" class="kgsvg" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="Map of CLEETS-KG: source datasets on the left, the grouped individuals they become in the middle, CLEETS ontology classes and reused vocabulary terms on the right."></svg></div>
+    <figcaption class="legend" id="legend">
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><rect x="1" y="2" width="28" height="12" rx="3.5" style="fill:var(--d1t);stroke:var(--d1);stroke-width:1.4"/><circle cx="7.5" cy="8" r="2.6" style="fill:var(--d1)"/></svg><span class="lt">dataset record</span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><rect x="1" y="2" width="28" height="12" rx="3" style="fill:var(--d1t);stroke:var(--d1);stroke-width:1.4"/></svg><span class="lt">individuals from one dataset</span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><defs><linearGradient id="lgf"><stop offset=".3" style="stop-color:var(--d1t)"/><stop offset=".7" style="stop-color:var(--d2t)"/></linearGradient><linearGradient id="lgs"><stop offset=".3" style="stop-color:var(--d1)"/><stop offset=".7" style="stop-color:var(--d2)"/></linearGradient></defs><rect x="1" y="2" width="28" height="12" rx="3" style="stroke-width:1.4" fill="url(#lgf)" stroke="url(#lgs)"/></svg><span class="lt">derived from two datasets</span></span>
+      <span><svg width="18" height="16" viewBox="0 0 18 16"><polygon points="9,1 16,8 9,15 2,8" style="fill:var(--node);stroke:var(--ink-2);stroke-width:1.3"/></svg><span class="lt">derivation (<code>prov:Activity</code>)</span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><rect x="1" y="2" width="28" height="12" rx="6" style="fill:var(--node);stroke:var(--ink-2);stroke-width:1.25"/></svg><span class="lt">CLEETS class</span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><rect x="1" y="2" width="28" height="12" rx="6" style="fill:var(--band);stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:4 3"/></svg><span class="lt">reused term</span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><path d="M1,8H23" style="stroke:var(--d1);stroke-width:1.7;fill:none"/><polygon points="29,8 22,4.6 22,11.4" style="fill:var(--d1)"/></svg><span class="lt"><code>dcterms:source</code>, <code>prov:used</code></span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><path d="M1,8H23" style="stroke:var(--edge);stroke-width:1.3;fill:none"/><polygon points="29,8 22,4.6 22,11.4" style="fill:var(--edge)"/></svg><span class="lt">object property, labelled</span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><path d="M1,8H23" style="stroke:var(--edge);stroke-width:1.1;stroke-dasharray:3.5 3;fill:none"/><polygon points="29,8 22,4.6 22,11.4" style="fill:var(--edge)"/></svg><span class="lt"><code>rdf:type</code></span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><path d="M1,8H19" style="stroke:var(--edge);stroke-width:1.3;fill:none"/><polygon points="29,8 19.5,3.4 19.5,12.6" style="fill:var(--surface);stroke:var(--edge);stroke-width:1.2"/></svg><span class="lt"><code>rdfs:subClassOf</code></span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><path d="M1,8H29" style="stroke:var(--edge);stroke-width:4.4;fill:none"/><path d="M1,8H29" style="stroke:var(--surface);stroke-width:1.8;fill:none"/></svg><span class="lt"><code>owl:equivalentClass</code></span></span>
+      <span><svg width="30" height="16" viewBox="0 0 30 16"><path d="M1,8H29" style="stroke:var(--edge);stroke-width:1.3;stroke-dasharray:1.5 3.5;stroke-linecap:round;fill:none"/></svg><span class="lt">axiom from an imported ontology</span></span>
+      <span class="note">Arrows run from subject to object. Names without a prefix are in the <code>cleets:</code> namespace. A node in the middle band stands for all individuals that share a type, an observed property and a source; × gives how many. A derived group points to its derivation with <code>prov:wasGeneratedBy</code>, and the derivation points to its inputs with <code>prov:used</code>.</span>
+    </figcaption>
+  </figure>
+
+  <section class="detail" id="detail" role="tabpanel" aria-labelledby="tab-all"></section>
+
+  <footer id="foot"></footer>
+  <noscript><p>This page draws its map with JavaScript. Enable it to see the graph.</p></noscript>
+</div>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script id="model" type="application/json">/*__MODEL__*/</script>
+<script>
+(function(){
+"use strict";
+const M = JSON.parse(document.getElementById("model").textContent);
+const NS = "http://www.w3.org/2000/svg";
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString("en-GB");
+
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})){
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k === "text") e.textContent = v;
+    else e.setAttribute(k, v);
+  }
+  for (const c of kids) if (c != null) e.append(c);
+  return e;
+}
+function sv(tag, attrs, ...kids){
+  const e = document.createElementNS(NS, tag);
+  for (const k in (attrs || {})){
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    e.setAttribute(k, v);
+  }
+  for (const c of kids) if (c != null) e.append(c);
+  return e;
+}
+const dsIndex = {};
+M.tabs.forEach(t => { if (t.idx) dsIndex[t.id] = t.idx; });
+
+/* ---------- rich text: `code`, **bold**, [[Dataset]] ---------- */
+function rich(str){
+  const frag = document.createDocumentFragment();
+  const re = /`([^`]+)`|\*\*([^*]+)\*\*|\[\[([^\]]+)\]\]/g;
+  let i = 0, m;
+  while ((m = re.exec(str))){
+    if (m.index > i) frag.append(str.slice(i, m.index));
+    if (m[1] != null) frag.append(el("code", {text: m[1]}));
+    else if (m[2] != null) frag.append(el("strong", {text: m[2]}));
+    else frag.append(chip(m[3]));
+    i = re.lastIndex;
+  }
+  if (i < str.length) frag.append(str.slice(i));
+  return frag;
+}
+function val(v){ return v.r != null ? rich(v.r) : document.createTextNode(v.p == null ? "" : v.p); }
+function chip(id){
+  if (!dsIndex[id]) return el("strong", {text: id});
+  const b = el("button", {type: "button", class: "chip", "data-ds": id, title: "Show " + id + " on the map"}, el("span", {class: "dot"}), id);
+  b.style.setProperty("--c", "var(--d" + dsIndex[id] + ")");
+  return b;
+}
+
+/* ---------- header and footer ---------- */
+$("#eyebrow").textContent = M.meta.label + " · " + fmt(M.meta.triples) + " triples · ontology v" + M.meta.onto + " · graph last modified " + M.meta.modified;
+(function(){
+  const f = $("#foot");
+  f.append("Every count on this page is read from ", el("code", {text: "index.ttl"}), " in ",
+    el("a", {href: "https://github.com/Naeima/cleets", target: "_blank", rel: "noopener", text: "github.com/Naeima/cleets"}),
+    M.meta.commit ? " at commit " + M.meta.commit + " (" + M.meta.commitDate + ")" : "",
+    ". Page built " + M.meta.built + ".");
+})();
+
+/* ---------- tabs ---------- */
+const tabsEl = $("#tabs");
+const tabBtn = {};
+M.tabs.forEach(t => {
+  const b = el("button", {type: "button", role: "tab", class: "tab" + (t.idx ? "" : " all"), id: "tab-" + t.id, "data-id": t.id,
+    "aria-selected": "false", "aria-controls": "detail", tabindex: "-1", title: t.topic || "The whole graph"}, el("span", {class: "dot"}), t.name);
+  if (t.idx) b.style.setProperty("--c", "var(--d" + t.idx + ")");
+  tabBtn[t.id] = b;
+  tabsEl.append(b);
+});
+tabsEl.addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) select(b.dataset.id, true); });
+tabsEl.addEventListener("keydown", e => {
+  const ids = M.tabs.map(t => t.id); let i = ids.indexOf(current);
+  if (e.key === "ArrowRight") i = (i + 1) % ids.length;
+  else if (e.key === "ArrowLeft") i = (i - 1 + ids.length) % ids.length;
+  else if (e.key === "Home") i = 0;
+  else if (e.key === "End") i = ids.length - 1;
+  else return;
+  e.preventDefault(); select(ids[i], true); tabBtn[ids[i]].focus();
+});
+document.addEventListener("click", e => { const c = e.target.closest(".chip[data-ds]"); if (c) { select(c.dataset.ds, true); $("#strip").scrollIntoView({block: "nearest", behavior: "auto"}); } });
+
+/* ---------- the map ---------- */
+const svg = $("#kg"), canvas = $("#canvas"), tip = $("#tip");
+svg.setAttribute("viewBox", "0 0 " + M.meta.W + " " + M.meta.H);
+const defs = sv("defs"); svg.append(defs);
+const byId = new Map();     // id -> element (nodes, edges, observable-property rows)
+const tipOf = new Map();    // element -> tip data
+const madeGrad = new Set();
+function stop(off, color){ const s = sv("stop", {offset: off}); s.style.stopColor = color; return s; }
+function grad(a, b){
+  const id = a + "_" + b;
+  if (!madeGrad.has(id)){
+    madeGrad.add(id);
+    const f = sv("linearGradient", {id: "gf" + id}, stop(.3, "var(--d" + a + "t)"), stop(.7, "var(--d" + b + "t)"));
+    const s = sv("linearGradient", {id: "gs" + id}, stop(.3, "var(--d" + a + ")"), stop(.7, "var(--d" + b + ")"));
+    defs.append(f, s);
+  }
+  return id;
+}
+
+const gBands = sv("g"), gEdges = sv("g"), gLabels = sv("g"), gNodes = sv("g");
+svg.append(gBands, gEdges, gLabels, gNodes);
+
+M.bands.forEach(b => {
+  gBands.append(sv("g", {class: "band"},
+    sv("rect", {x: b.x0, y: 8, width: b.x1 - b.x0, height: M.meta.H - 16, rx: 12}),
+    sv("text", {class: "bt", x: b.x0 + 14, y: 33}, b.title),
+    sv("text", {class: "bs", x: b.x0 + 14, y: 50, "data-max": b.x1 - b.x0 - 24}, b.sub)));
+});
+
+M.edges.forEach(e => {
+  const g = sv("g", {class: "e k-" + e.kind + (e.ds ? " col" : ""), "data-id": e.id});
+  if (e.ds) g.style.setProperty("--c", "var(--d" + e.ds + ")");
+  g.append(sv("path", {class: "hit", d: e.d}), sv("path", {class: "ln", d: e.d}));
+  if (e.kind === "eq") g.append(sv("path", {class: "ln2", d: e.d}));
+  if (e.head) g.append(sv("polygon", {class: "hd " + e.headType, points: e.head}));
+  gEdges.append(g); byId.set(e.id, g);
+  if (e.tip) tipOf.set(g, e.tip);
+});
+
+const trunkEls = M.trunks.map(t => {
+  const g = sv("g", {class: "e trunk"}, sv("path", {class: "hit", d: t.d}));
+  gEdges.append(g); tipOf.set(g, t.tip);
+  return g;
+});
+
+const labelEls = [];
+M.labels.forEach(l => {
+  const t = sv("text", {class: "el" + (l.text === "≡" ? " sym" : "") + (l.always ? "" : " late"), x: l.x, y: l.y, "text-anchor": l.anchor,
+    transform: l.rot ? "rotate(" + l.rot + " " + l.x + " " + l.y + ")" : null}, l.text);
+  gLabels.append(t); labelEls.push([t, l.edges]);
+});
+
+function boxFor(n, rx){
+  const r = sv("rect", {class: "box", x: n.x, y: n.y, width: n.w, height: n.h, rx: rx});
+  if (n.ds && n.ds.length > 1){ const id = grad(n.ds[0], n.ds[1]); r.style.fill = "url(#gf" + id + ")"; r.style.stroke = "url(#gs" + id + ")"; }
+  return r;
+}
+M.nodes.forEach(n => {
+  const cy = n.y + n.h / 2;
+  let g;
+  if (n.kind === "dataset"){
+    g = sv("g", {class: "n dataset", "data-id": n.id, tabindex: 0, role: "button", "aria-label": "Dataset " + n.title + ": " + n.sub + ". Select to highlight it."},
+      boxFor(n, 8), sv("circle", {class: "dot", cx: n.x + 15, cy: cy, r: 5}),
+      sv("text", {class: "t", x: n.x + 28, y: n.y + 17, "data-max": n.w - 36}, n.title),
+      sv("text", {class: "s", x: n.x + 28, y: n.y + 30.5, "data-max": n.w - 36}, n.sub));
+    g.dataset.ds = n.dsid;
+  } else if (n.kind === "group"){
+    const label = n.title + ", " + fmt(n.count) + " individuals";
+    g = sv("g", {class: "n group" + (n.hub ? " hub" : "") + (n.derived ? " derived" : ""), "data-id": n.id, tabindex: 0, role: "img", "aria-label": label},
+      boxFor(n, 6),
+      sv("text", {class: "t", x: n.x + 11, y: n.y + 17, "data-max": n.w - 22 - 50}, n.title),
+      sv("text", {class: "cnt", x: n.x + n.w - 10, y: n.y + 17, "text-anchor": "end"}, "×" + fmt(n.count)),
+      sv("text", {class: "s", x: n.x + 11, y: n.y + 30.5, "data-max": n.w - 22}, n.sub));
+  } else if (n.kind === "activity"){
+    const cx = n.x + n.w / 2, r = n.w / 2;
+    g = sv("g", {class: "n activity", "data-id": n.id, tabindex: 0, role: "img", "aria-label": n.tip.t},
+      sv("polygon", {class: "box", points: [cx, cy - r, cx + r, cy, cx, cy + r, cx - r, cy].join(",")}),
+      sv("text", {class: "t", x: cx - .5, y: cy + 4.3, "text-anchor": "middle"}, n.title));
+  } else if (n.kind === "class" || n.kind === "ext"){
+    g = sv("g", {class: "n " + n.kind, "data-id": n.id, tabindex: 0, role: "img", "aria-label": n.tip.t},
+      boxFor(n, n.h / 2),
+      sv("text", {class: "t", x: n.x + n.w / 2, y: cy + 4.3, "text-anchor": "middle", "data-max": n.w - 24}, n.title));
+  } else if (n.kind === "oplist"){
+    g = sv("g", {class: "n oplist"}, sv("rect", {class: "box", x: n.x, y: n.y, width: n.w, height: n.h, rx: 6}));
+    let y = n.y + 13.5;
+    n.rows.forEach((r, i) => {
+      if (i === 0 || i === n.n_in){ g.append(sv("text", {class: "oh", x: n.x + 10, y: y, "data-max": n.w - 20}, n.heads[i === 0 ? 0 : 1])); y += 14.5; }
+      const row = sv("g", {class: "oprow" + (r.inonto ? "" : " data") + (r.used ? "" : " unused"), "data-id": r.id, tabindex: 0, role: "img", "aria-label": r.tip.t},
+        sv("rect", {class: "hitr", x: n.x + 2, y: y - 10.5, width: n.w - 4, height: 14.5}),
+        sv("circle", {class: "mk", cx: n.x + 14, cy: y - 3.6, r: 2.6}),
+        sv("text", {x: n.x + 23, y: y, "data-max": n.w - 31}, r.text + (r.used ? "" : "  (not used)")));
+      g.append(row); byId.set(r.id, row); tipOf.set(row, r.tip);
+      y += 14.5;
+      if (i === n.n_in - 1) y += 3;
+    });
+  }
+  if (n.ds && n.ds.length === 1){ g.style.setProperty("--c", "var(--d" + n.ds[0] + ")"); g.style.setProperty("--t", "var(--d" + n.ds[0] + "t)"); }
+  gNodes.append(g); byId.set(n.id, g);
+  if (n.tip) tipOf.set(g, n.tip);
+});
+
+/* squeeze any label that is wider than its node (only bites with fallback fonts) */
+function fitText(){
+  svg.querySelectorAll("text[data-max]").forEach(t => {
+    t.removeAttribute("textLength"); t.removeAttribute("lengthAdjust");
+    const max = +t.dataset.max;
+    if (max > 0 && t.getComputedTextLength() > max){ t.setAttribute("textLength", max); t.setAttribute("lengthAdjust", "spacingAndGlyphs"); }
+  });
+}
+
+/* ---------- zoom and pan ---------- */
+let zoom = 1;
+const MIN_W = 980;
+function fitWidth(){
+  const cw = canvas.clientWidth;
+  if (cw <= MIN_W) return MIN_W;
+  const availH = window.innerHeight - tabsEl.offsetHeight - document.querySelector(".maptools").offsetHeight - 20;
+  return Math.min(cw, Math.max(MIN_W, .86 * cw, availH * M.meta.W / M.meta.H));   /* give up at most 14% of the width to fit the height */
+}
+function applyZoom(){
+  const base = fitWidth();
+  svg.style.width = Math.round(base * zoom) + "px";
+  canvas.classList.toggle("zoomed", zoom > 1.001);
+  $("#zval").textContent = Math.round(zoom * 100) + "%";
+  $("#zout").disabled = zoom <= 1.001; $("#zfit").disabled = zoom <= 1.001; $("#zin").disabled = zoom >= 2.99;
+}
+function setZoom(z){
+  const cx = (canvas.scrollLeft + canvas.clientWidth / 2) / canvas.scrollWidth, cy = (canvas.scrollTop + canvas.clientHeight / 2) / Math.max(1, canvas.scrollHeight);
+  zoom = Math.max(1, Math.min(3, z)); applyZoom();
+  canvas.scrollLeft = cx * canvas.scrollWidth - canvas.clientWidth / 2; canvas.scrollTop = cy * canvas.scrollHeight - canvas.clientHeight / 2;
+}
+$("#zin").addEventListener("click", () => setZoom(zoom + .25));
+$("#zout").addEventListener("click", () => setZoom(zoom - .25));
+$("#zfit").addEventListener("click", () => setZoom(1));
+window.addEventListener("resize", applyZoom);
+if (window.ResizeObserver) new ResizeObserver(() => applyZoom()).observe(canvas);
+(function(){
+  let drag = null;
+  canvas.addEventListener("pointerdown", e => {
+    if (e.pointerType !== "mouse" || e.button !== 0 || e.target.closest(".n,.e")) return;
+    if (canvas.scrollWidth <= canvas.clientWidth && canvas.scrollHeight <= canvas.clientHeight) return;
+    drag = {x: e.clientX, y: e.clientY, l: canvas.scrollLeft, t: canvas.scrollTop}; canvas.classList.add("dragging");
+  });
+  window.addEventListener("pointermove", e => { if (!drag) return; canvas.scrollLeft = drag.l - (e.clientX - drag.x); canvas.scrollTop = drag.t - (e.clientY - drag.y); });
+  window.addEventListener("pointerup", () => { drag = null; canvas.classList.remove("dragging"); });
+})();
+
+/* ---------- tooltips ---------- */
+let tipFor = null;
+function showTip(target, evt){
+  const d = tipOf.get(target); if (!d) return;
+  tip.textContent = "";
+  tip.append(el("div", {class: "k", text: d.k}), el("div", {class: "t", text: d.t}));
+  const lines = (d.l || []).filter(Boolean);
+  if (lines.length) tip.append(el("ul", null, ...lines.map(s => el("li", {text: s}))));
+  tip.hidden = false; tipFor = target;
+  const r = target.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  let x, y;
+  if (evt && target.classList.contains("e")){ x = evt.clientX + 14; y = evt.clientY + 16; }
+  else { x = r.left; y = r.bottom + 8; }
+  if (y + th > window.innerHeight - 8) y = (evt && target.classList.contains("e") ? evt.clientY : r.top) - th - 10;
+  x = Math.max(8, Math.min(x, window.innerWidth - tw - 8)); y = Math.max(8, y);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+function hideTip(){ tip.hidden = true; tipFor = null; }
+const incident = new Map();
+M.edges.forEach(e => { [e.s, e.t].forEach(id => { if (!incident.has(id)) incident.set(id, []); incident.get(id).push(byId.get(e.id)); }); });
+function mark(g, on){ const id = g.getAttribute("data-id"); (incident.get(id) || []).forEach(x => x.classList.toggle("inc", on)); }
+gNodes.querySelectorAll(".n[data-id]").forEach(g => {
+  g.addEventListener("pointerenter", () => mark(g, true)); g.addEventListener("pointerleave", () => mark(g, false));
+  g.addEventListener("focus", () => mark(g, true)); g.addEventListener("blur", () => mark(g, false));
+});
+tipOf.forEach((d, g) => {
+  g.addEventListener("pointerenter", e => { if (e.pointerType !== "touch") showTip(g, e); });
+  g.addEventListener("pointermove", e => { if (e.pointerType !== "touch" && g.classList.contains("e")) showTip(g, e); });
+  g.addEventListener("pointerleave", e => { if (e.pointerType !== "touch") hideTip(); });
+  g.addEventListener("focus", () => showTip(g));
+  g.addEventListener("blur", hideTip);
+});
+svg.addEventListener("click", e => {
+  const ds = e.target.closest(".n.dataset");
+  if (ds){ hideTip(); select(ds.dataset.ds === current ? "all" : ds.dataset.ds, true); return; }
+  const g = e.target.closest(".oprow") || e.target.closest(".n,.e");
+  if (g && tipOf.has(g)) showTip(g, e); else hideTip();
+});
+svg.addEventListener("keydown", e => {
+  if (e.key === "Escape") hideTip();
+  const ds = e.target.closest && e.target.closest(".n.dataset");
+  if (ds && (e.key === "Enter" || e.key === " ")){ e.preventDefault(); select(ds.dataset.ds === current ? "all" : ds.dataset.ds, true); }
+});
+document.addEventListener("click", e => { if (!e.target.closest("#kg")) hideTip(); });
+canvas.addEventListener("scroll", hideTip, {passive: true});
+window.addEventListener("scroll", hideTip, {passive: true});
+
+/* ---------- panels ---------- */
+function kvList(rows){ const dl = el("dl", {class: "kv"}); rows.forEach(r => dl.append(el("dt", {text: r[0]}), el("dd", null, val(r[1])))); return dl; }
+function tableOf(t){
+  const tb = el("table", null, el("caption", {text: t.cap}));
+  tb.append(el("thead", null, el("tr", null, ...t.head.map(h => el("th", {scope: "col", text: h})))));
+  const body = el("tbody"); t.rows.forEach(r => body.append(el("tr", null, ...r.map((c, i) => el(i ? "td" : "th", i ? null : {scope: "row", style: "text-transform:none;letter-spacing:0;font-size:14px"}, val(c)))))); tb.append(body);
+  return el("div", {class: "tablewrap"}, tb);
+}
+function card(c){
+  const h = el("h2", null, c.h); if (c.sub){ const s = el("small"); s.append(rich(c.sub)); h.append(s); }
+  const a = el("article", {class: "card"}, h);
+  if (c.lead) a.append(el("p", {class: "lead"}, rich(c.lead)));
+  (c.blocks || []).forEach(b => a.append(el("div", {class: "block"}, el("h3", null, rich(b.h)), kvList(b.kv))));
+  (c.items || []).forEach(it => {
+    const d = el("div", {class: "item"}, el("h3", null, rich(it.h)), el("p", null, rich(it.p)));
+    if (it.quote) d.append(el("blockquote", {class: "quote"}, it.quote, el("cite", {text: it.qsrc})));
+    a.append(d);
+  });
+  if (c.terms){ const ul = el("ul", {class: "terms"}); c.terms.forEach(t => { const li = el("li", null, el("span", {class: "role", text: t.role}), el("span", {class: "chain", text: t.chain})); if (t.note) li.append(el("span", {class: "note"}, val(t.note))); ul.append(li); }); a.append(ul); }
+  if (c.kv) a.append(kvList(c.kv));
+  if (c.table) a.append(tableOf(c.table));
+  if (c.bullets) a.append(el("ul", {class: "bullets"}, ...c.bullets.map(b => el("li", null, rich(b)))));
+  if (c.code) a.append(el("div", {class: "codewrap"}, el("p", {class: "codecap", text: c.codecap}), el("pre", {class: "code", tabindex: 0, text: c.code})));
+  if (c.foot) a.append(el("p", {class: "foot"}, rich(c.foot)));
+  if (c.links && c.links.length) a.append(el("p", {class: "links"}, ...c.links.map(l => el("a", {href: l[1], target: "_blank", rel: "noopener", text: l[0]}))));
+  if (c.cite) a.append(el("p", {class: "cite"}, el("span", {class: "lab", style: "display:block", text: "Cite as"}), c.cite));
+  return a;
+}
+function renderPanel(id){
+  const p = M.panels[id], strip = $("#strip"), detail = $("#detail");
+  strip.textContent = ""; detail.textContent = "";
+  const h = el("h2", null, p.name);
+  if (dsIndex[id]){ const dot = el("span", {class: "dot"}); dot.style.setProperty("--c", "var(--d" + dsIndex[id] + ")"); h.prepend(dot); }
+  strip.append(el("div", {class: "strip-head"}, h, el("p", {text: p.title})));
+  strip.append(el("dl", {class: "facts"}, ...p.strip.map(s => el("div", {class: "fact"}, el("dt", {text: s[0]}), el("dd", null, rich(s[1]))))));
+  const cols = el("div", {class: "cols"});
+  p.cards.filter(c => !c.wide).forEach(c => cols.append(card(c)));
+  detail.append(cols);
+  p.cards.filter(c => c.wide).forEach(c => detail.append(card(c)));
+}
+
+/* ---------- selection ---------- */
+let current = null;
+function select(id, user){
+  if (!M.panels[id]) id = "all";
+  current = id;
+  const hl = M.hl[id];
+  svg.classList.toggle("has-sel", !!hl);
+  byId.forEach(g => g.classList.remove("on", "ctx", "sel"));
+  const on = new Set(hl ? hl.on : []), ctx = new Set(hl ? hl.ctx : []);
+  on.forEach(i => { const g = byId.get(i); if (g) g.classList.add("on"); });
+  ctx.forEach(i => { const g = byId.get(i); if (g) g.classList.add("ctx"); });
+  if (hl){ const g = byId.get("ds:" + id); if (g) g.classList.add("sel"); }
+  /* paint order: faded lines first, highlighted lines last, shared hover targets on top */
+  const rank = e => on.has(e.id) ? 2 : ctx.has(e.id) ? 1 : 0;
+  M.edges.slice().sort((a, b) => rank(a) - rank(b)).forEach(e => gEdges.append(byId.get(e.id)));
+  trunkEls.forEach(g => gEdges.append(g));
+  labelEls.forEach(([t, edges]) => { t.classList.toggle("on", edges.some(e => on.has(e))); t.classList.toggle("ctx", !edges.some(e => on.has(e)) && edges.some(e => ctx.has(e))); });
+  M.tabs.forEach(t => { const b = tabBtn[t.id], s = t.id === id; b.setAttribute("aria-selected", s ? "true" : "false"); b.tabIndex = s ? 0 : -1; });
+  renderPanel(id);
+  $("#detail").setAttribute("aria-labelledby", "tab-" + id);
+  if (vowlReady) vowlSelect(id);
+  if (user){ try { history.replaceState(null, "", id === "all" ? location.pathname + location.search : "#" + id); } catch (err) { /* sandboxed frame: ignore */ } }
+}
+
+
+/* ================= VOWL view: force-directed node-link drawing in WebVOWL's notation ================= */
+const V = M.vowl;
+const vsvg = $("#vsvg"), vcanvas = $("#vcanvas"), vside = $("#vside");
+const VOWL_CSS = [
+  "svg{/*__PALETTE_SVG__*/}",
+  "text{font-family:Helvetica,Arial,sans-serif;font-size:12px;fill:#000;pointer-events:none}",
+  ".subtext{font-size:9px}.cnt{font-size:11px;fill:#666}.ext text,.ext .cnt{fill:#fff}.ext .cnt{fill:#dde}",
+  ".ds .lbl{font-weight:bold}.ds .sub{font-size:9.5px;fill:#555}.act text{font-style:italic;font-weight:bold;font-size:13px}",
+  ".vn circle,.vn rect,.vn polygon{stroke:#000;stroke-width:2}",
+  ".cls .in{fill:#acf}.ext .in{fill:#36c}.thing .in{fill:#fff;stroke-dasharray:8}.vn .outer{fill:#fff}",
+  ".dt rect,.lit rect{fill:#fc3}.lit rect{stroke-dasharray:8}.act polygon{fill:#fff}",
+  ".ds rect{fill:var(--t,#fff);stroke:var(--c,#000);stroke-width:2}.ds .dot{fill:var(--c,#000);stroke:none}",
+  ".vl path{fill:none;stroke:#000;stroke-width:2}.vl.col path{stroke:var(--c)}.vl.sub path{stroke-dasharray:3}.vl.dj path{stroke-dasharray:8}",
+  ".vl .hd{fill:#000;stroke:none}.vl.col .hd{fill:var(--c)}.vl.sub .hd{fill:#fff;stroke:#000;stroke-width:2;stroke-linejoin:round}",
+  ".vlab .bg{stroke:none}.vlab.obj .bg,.vlab.dj .bg{fill:#acf}.vlab.dtp .bg{fill:#9c6}.vlab.sub .bg{fill:#fff}.vlab.col .bg{fill:var(--t,#eee)}.vlab.gen .bg{fill:#e3e8ee}.vl.gen path{stroke:#6a7480}.vl.gen .hd{fill:#6a7480}",
+  ".vlab.dj circle{fill:#69c;stroke:#000;stroke-width:1}",
+  ".vn.hov .in,.vn.hov rect,.vn.hov polygon,.vn.hov .outer{stroke:#f00}.vl.hov path{stroke:#f00}.vlab.hov .bg{stroke:#f00;stroke-width:2}",
+  ".vn.foc .in,.vn.foc rect,.vn.foc polygon{stroke:#f00;stroke-width:4}.vl.foc path{stroke:#f00;stroke-width:3}.vlab.foc .bg{stroke:#f00;stroke-width:3}",
+  ".pin{fill:#000;cursor:pointer}.pin line{stroke:#000;stroke-width:2}",
+  ".compact .vlab.sub,.compact .subtext{display:none}",
+  ".has-sel .vn:not(.on):not(.ctx),.has-sel .vl:not(.on):not(.ctx),.has-sel .vlab:not(.on):not(.ctx){opacity:.12}",
+  ".has-sel .vn.ctx,.has-sel .vl.ctx,.has-sel .vlab.ctx{opacity:.45}",
+  ".hit{fill:none;stroke:transparent;stroke-width:14;pointer-events:stroke}.vlab .hitr{fill:none;stroke:none;pointer-events:all}",
+  ".vn,.vlab{cursor:pointer;touch-action:none}.vn,.vl,.vlab{transition:opacity .18s ease}@media (prefers-reduced-motion:reduce){.vn,.vl,.vlab{transition:none}}"
+].join("\n");
+const vstyle = sv("style"); vstyle.textContent = VOWL_CSS; vsvg.append(vstyle);
+const vroot = sv("g", {class: "root"}); vsvg.append(vroot);
+const gL = sv("g", {class: "links"}), gLab = sv("g", {class: "labels"}), gN = sv("g", {class: "nodes"});
+vroot.append(gL, gLab, gN);
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const hasD3 = typeof window.d3 !== "undefined";
+
+/* ---- options ---- */
+const opts = {datatype: true, subclass: true, disjoint: false, thing: true, data: true, scale: true, compact: false, labels: "names"};
+
+/* ---- text measurement ---- */
+const mctx = document.createElement("canvas").getContext("2d");
+function textW(s, size, bold){ mctx.font = (bold ? "bold " : "") + (size || 12) + "px Helvetica, Arial, sans-serif"; return mctx.measureText(s).width; }
+function truncate(s, maxW, size){
+  if (textW(s, size) <= maxW) return s;
+  let lo = 0, hi = s.length;
+  while (lo < hi){ const mid = (lo + hi + 1) >> 1; if (textW(s.slice(0, mid) + "…", size) <= maxW) lo = mid; else hi = mid - 1; }
+  return s.slice(0, Math.max(1, lo)) + "…";
+}
+function wrap(s, maxW, maxLines, size){
+  const words = s.split(/\s+/).flatMap(w => textW(w, size) <= maxW ? [w] : w.includes("-") ? w.split(/(?<=-)/) : w.split(/(?<=[a-z0-9])(?=[A-Z])/)), lines = [];
+  let cur = "";
+  for (const w of words){
+    const glue = (cur && !cur.endsWith("-")) ? " " : "";
+    const t = cur ? cur + glue + w : w;
+    if (textW(t, size) <= maxW || !cur) cur = t; else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  if (lines.length > maxLines){ const keep = lines.slice(0, maxLines); keep[maxLines - 1] = keep[maxLines - 1] + " " + lines.slice(maxLines).join(" "); return keep.map(l => truncate(l, maxW, size)); }
+  return lines.map(l => truncate(l, maxW, size));
+}
+
+/* ---- the graph data ---- */
+const byIdV = new Map();
+V.nodes.forEach(n => byIdV.set(n.id, n));
+V.links.forEach(l => byIdV.set(l.id, l));
+const nodeById = new Map(V.nodes.map(n => [n.id, n]));
+const KIND_SHAPE = {class: "circle", external: "circle", thing: "circle", datatype: "rect", literal: "rect", dataset: "rect", activity: "diamond"};
+function labelText(n){
+  if (n.kind === "class") return opts.labels === "names" ? n.label : n.name;
+  if (n.kind === "external") return n.name.split(":").pop();
+  return n.label;
+}
+function linkLabelText(l){
+  if (l.kind === "object" || l.kind === "datatype") return opts.labels === "names" ? l.label : l.name;
+  return l.label;
+}
+function sizeNode(n){
+  n.shape = KIND_SHAPE[n.kind];
+  if (n.shape === "circle"){
+    if (n.kind === "thing") n.r = 24;
+    else n.r = (opts.scale && n.count > 0) ? 36 + 3 * Math.log(n.count + 1) : 36;
+    if (n.equiv.length) n.r = Math.max(n.r, 50);
+    n.cr = n.r + (n.equiv.length ? 4 : 0);
+    /* lines: label (wrapped), equivalent classes, instance count or external prefix */
+    n.equivLines = [];
+    n.equiv.forEach(e => { const w = 2 * Math.sqrt(Math.max(0, n.r * n.r - 21 * 21)) - 8; if (textW(e, 12) > w && e.includes(":")){ const [p, ...rest] = e.split(":"); n.equivLines.push(p + ":", rest.join(":")); } else n.equivLines.push(e); });
+    n.prefix = n.kind === "external" ? n.name.slice(0, n.name.indexOf(":") + 1) : "";
+    const extra = n.equivLines.length + ((n.count > 0 || n.prefix) ? 1 : 0);
+    const maxLabelLines = n.equivLines.length ? 2 : (extra ? 3 : 4);
+    const longest = Math.max(...labelText(n).split(/\s+/).map(w => textW(w, 12)), ...n.equivLines.map(e => textW(e, 12)), 0);
+    if (longest + 12 > 2 * n.r){ n.r = Math.min(60, (longest + 12) / 2); n.cr = n.r + (n.equiv.length ? 4 : 0); }
+    let lines;
+    for (let pass = 0; pass < 2; pass++){
+      const total = (lines ? lines.length : 2) + extra;
+      const halfH = total * 14 / 2;
+      const chord = 2 * Math.sqrt(Math.max(0, n.r * n.r - halfH * halfH)) - 8;
+      lines = wrap(labelText(n), Math.max(28, chord), maxLabelLines, 12);
+    }
+    n.lines = lines;
+    const widest = Math.max(...lines.map(t => textW(t, 12)), ...n.equivLines.map(t => textW(t, 12)), 0);
+    if (widest + 10 > 2 * n.r){ n.r = (widest + 10) / 2; n.cr = n.r + (n.equiv.length ? 4 : 0); }
+  } else if (n.shape === "rect"){
+    if (n.kind === "dataset"){
+      n.h = 36; n.w = Math.max(118, Math.ceil(Math.max(textW(n.label, 12, true), textW(n.sub, 9.5)) + 36));
+    } else { n.h = 22; n.w = Math.max(66, Math.ceil(textW(n.label, 12) + 16)); }
+    n.cr = Math.hypot(n.w / 2, n.h / 2);
+  } else { n.r = 19; n.cr = n.r; }
+}
+function sizeLabel(l){
+  const lines = [linkLabelText(l)];
+  if (l.equiv && l.equiv.length){ lines[0] += ","; lines.push(...l.equiv); }
+  l.lines = lines;
+  l.subtext = l.sub ? "(" + l.sub + ")" : (l.n ? "(" + fmt(l.n) + ")" : "");
+  if (l.kind === "disjoint"){ l.lw = 58; l.lh = 28; return; }
+  let w = 0; lines.forEach(s => { w = Math.max(w, textW(s, 12)); });
+  if (l.subtext) w = Math.max(w, textW(l.subtext, 9));
+  l.lw = Math.max(l.kind === "subclass" ? 72 : 80, Math.ceil(w + 20));
+  l.lh = 28 + 12 * (lines.length - 1) + (l.subtext ? 11 : 0);
+}
+V.nodes.forEach(sizeNode);
+V.links.forEach(sizeLabel);
+/* label nodes: WebVOWL puts each property label into the force layout as a node of its own */
+const labNodes = V.links.map(l => ({id: "L:" + l.id, isLabel: true, link: l, cr: 14}));
+const labById = new Map(labNodes.map(n => [n.id, n]));
+V.links.forEach(l => { l.sNode = nodeById.get(l.s); l.tNode = nodeById.get(l.t); l.lab = labById.get("L:" + l.id); });
+
+/* ---- visibility under the filters ---- */
+function nodeVisible(n){
+  if (n.kind === "thing" && !opts.thing) return false;
+  if ((n.kind === "datatype" || n.kind === "literal") && !opts.datatype) return false;
+  if ((n.kind === "datatype" || n.kind === "literal") && !opts.thing){ const l = V.links.find(x => x.t === n.id); if (l && l.sNode.kind === "thing") return false; }
+  if ((n.kind === "dataset" || n.kind === "activity") && !opts.data) return false;
+  return true;
+}
+function linkVisible(l){
+  if (l.kind === "datatype" && !opts.datatype) return false;
+  if (l.kind === "subclass" && !opts.subclass) return false;
+  if (l.kind === "disjoint" && !opts.disjoint) return false;
+  if ((l.kind === "source" || l.kind === "used" || l.kind === "generated") && !opts.data) return false;
+  if (!opts.thing && (l.sNode.kind === "thing" || l.tNode.kind === "thing")) return false;
+  return nodeVisible(l.sNode) && nodeVisible(l.tNode);
+}
+
+/* ---- elements ---- */
+const elN = new Map(), elL = new Map(), elLab = new Map();
+function dsVars(g, idx){ g.style.setProperty("--c", "var(--d" + idx + ")"); g.style.setProperty("--t", "var(--d" + idx + "t)"); }
+function buildNode(n){
+  const cls = {class: "cls", external: "ext", thing: "thing", datatype: "dt", literal: "lit", dataset: "ds", activity: "act"}[n.kind];
+  const g = sv("g", {class: "vn " + cls, "data-id": n.id, tabindex: 0, role: "button", "aria-label": n.label + (n.kind === "class" ? ", class" : n.kind === "dataset" ? ", dataset record" : "")});
+  if (n.kind === "dataset") dsVars(g, n.ds);
+  g.append(sv("title", null, n.curie === n.label ? n.label : n.label + " (" + n.curie + ")"));
+  drawNode(n, g);
+  gN.append(g); elN.set(n.id, g);
+  return g;
+}
+function drawNode(n, g){
+  g.querySelectorAll(":scope > :not(title)").forEach(e => e.remove());
+  if (n.shape === "circle"){
+    if (n.equiv.length) g.append(sv("circle", {class: "outer", r: n.cr}));
+    g.append(sv("circle", {class: "in", r: n.r}));
+    const lines = n.lines.slice();
+    const rows = lines.map(t => ({t, c: ""}));
+    if (n.equivLines.length){ rows[rows.length - 1].t += ","; n.equivLines.forEach(e => rows.push({t: e, c: ""})); }
+    if (n.count > 0) rows.push({t: fmt(n.count), c: "cnt"});
+    else if (n.prefix) rows.push({t: n.prefix, c: "cnt"});
+    const text = sv("text", {"text-anchor": "middle", y: -((rows.length - 1) * 14) / 2 + 4});
+    rows.forEach((r, i) => text.append(sv("tspan", {x: 0, dy: i ? 14 : 0, class: r.c || null}, r.t)));
+    g.append(text);
+  } else if (n.shape === "rect"){
+    g.append(sv("rect", {x: -n.w / 2, y: -n.h / 2, width: n.w, height: n.h, rx: n.kind === "dataset" ? 6 : 0}));
+    if (n.kind === "dataset"){
+      g.append(sv("circle", {class: "dot", cx: -n.w / 2 + 13, cy: 0, r: 4.5}),
+        sv("text", {class: "lbl", x: -n.w / 2 + 24, y: -2}, n.label),
+        sv("text", {class: "sub", x: -n.w / 2 + 24, y: 11}, n.sub));
+    } else g.append(sv("text", {"text-anchor": "middle", y: 4}, n.label));
+  } else {
+    const r = n.r;
+    g.append(sv("polygon", {points: `0,${-r} ${r},0 0,${r} ${-r},0`}), sv("text", {"text-anchor": "middle", y: 4.5, x: -.5}, "ƒ"));
+  }
+  if (n.pinned) g.append(pinMark(n));
+}
+function pinMark(n){
+  const off = n.shape === "circle" ? n.cr : (n.shape === "rect" ? n.h / 2 : n.r);
+  return sv("g", {class: "pin", transform: `translate(${(n.shape === "rect" ? n.w / 2 - 6 : off * .7)},${-off * .7 - (n.shape === "rect" ? 4 : 0)})`},
+    sv("circle", {r: 4.5, stroke: "none"}), sv("line", {x1: 0, y1: 4, x2: 0, y2: 10}));
+}
+function buildLink(l){
+  const cls = {object: "obj", datatype: "dtp", subclass: "sub", disjoint: "dj", source: "col src", used: "col used", generated: "gen"}[l.kind];
+  const g = sv("g", {class: "vl " + cls, "data-id": l.id});
+  if (l.ds) dsVars(g, l.ds);
+  g.append(sv("path", {class: "hit"}), sv("path", {class: "ln"}));
+  if (l.kind !== "disjoint") g.append(sv("polygon", {class: "hd"}));
+  gL.append(g); elL.set(l.id, g);
+  const lab = sv("g", {class: "vlab " + cls, "data-id": l.id, tabindex: 0, role: "button", "aria-label": (l.label || l.name) + ", " + l.kind.replace("object", "object property").replace("datatype", "datatype property")});
+  if (l.ds) dsVars(lab, l.ds);
+  lab.append(sv("title", null, l.curie));
+  drawLabel(l, lab);
+  gLab.append(lab); elLab.set(l.id, lab);
+}
+function drawLabel(l, lab){
+  lab.querySelectorAll(":scope > :not(title)").forEach(e => e.remove());
+  lab.append(sv("rect", {class: "bg", x: -l.lw / 2, y: -l.lh / 2, width: l.lw, height: l.lh}));
+  if (l.kind === "disjoint"){
+    lab.append(sv("circle", {cx: -12.5, cy: -1, r: 8}), sv("circle", {cx: 12.5, cy: -1, r: 8}),
+      sv("text", {class: "subtext", "text-anchor": "middle", y: 12}, "(disjoint)"));
+  } else {
+    const text = sv("text", {"text-anchor": "middle", y: -((l.lines.length - 1) * 12) / 2 + 4 - (l.subtext ? 5 : 0)});
+    l.lines.forEach((t, i) => text.append(sv("tspan", {x: 0, dy: i ? 12 : 0}, t)));
+    lab.append(text);
+    if (l.subtext) lab.append(sv("text", {class: "subtext", "text-anchor": "middle", y: ((l.lines.length - 1) * 12) / 2 + 3 + 9}, l.subtext));
+  }
+  lab.append(sv("rect", {class: "hitr", x: -l.lw / 2, y: -l.lh / 2, width: l.lw, height: l.lh}));
+}
+V.nodes.forEach(buildNode);
+V.links.forEach(buildLink);
+
+/* ---- geometry ---- */
+function border(n, tx, ty, pad){
+  const dx = tx - n.x, dy = ty - n.y, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+  let t;
+  if (n.shape === "circle") t = n.cr + pad;
+  else if (n.shape === "rect") t = Math.min((n.w / 2 + pad) / Math.max(1e-6, Math.abs(ux)), (n.h / 2 + pad) / Math.max(1e-6, Math.abs(uy)));
+  else t = n.r / (Math.abs(ux) + Math.abs(uy)) + pad;
+  return [n.x + ux * t, n.y + uy * t];
+}
+function tick(){
+  for (const l of visLinks){
+    const s = l.sNode, t = l.tNode, L = l.lab;
+    const [sx, sy] = border(s, L.x, L.y, 1), [ex, ey] = border(t, L.x, L.y, 1);
+    const cx = 2 * L.x - (sx + ex) / 2, cy = 2 * L.y - (sy + ey) / 2;
+    const g = elL.get(l.id);
+    let d;
+    if (l.kind === "disjoint"){ d = `M${sx},${sy}Q${cx},${cy} ${ex},${ey}`; }
+    else {
+      /* shorten the curve so the arrowhead's tip sits on the border */
+      let tx = ex - cx, ty = ey - cy; const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+      const bx = ex - tx * 10, by = ey - ty * 10;
+      d = `M${sx},${sy}Q${cx},${cy} ${bx},${by}`;
+      g.lastElementChild.setAttribute("points", `${ex},${ey} ${bx - ty * 5.5},${by + tx * 5.5} ${bx + ty * 5.5},${by - tx * 5.5}`);
+    }
+    g.firstElementChild.setAttribute("d", d); g.children[1].setAttribute("d", d);
+    elLab.get(l.id).setAttribute("transform", `translate(${L.x},${L.y})`);
+  }
+  for (const n of visNodes) elN.get(n.id).setAttribute("transform", `translate(${n.x},${n.y})`);
+}
+
+/* ---- the simulation ---- */
+let visNodes = [], visLinks = [], sim = null;
+function seed(){
+  /* a deterministic starting arrangement: sources on the left, classes in the middle, their datatypes beside them */
+  const W = vcanvas.clientWidth || 1000, H = vcanvas.clientHeight || 620;
+  const classes = V.nodes.filter(n => n.kind === "class"), ext = V.nodes.filter(n => n.kind === "external");
+  classes.forEach((n, i) => { const a = (i / classes.length) * 2 * Math.PI; n.x = W * .55 + Math.cos(a) * W * .24; n.y = H / 2 + Math.sin(a) * H * .34; });
+  ext.forEach((n, i) => { n.x = W * .9; n.y = H * (.3 + .4 * i); });
+  V.nodes.filter(n => n.kind === "dataset").forEach((n, i) => { n.x = 90; n.y = H * (i + .5) / 8; });
+  V.nodes.filter(n => n.kind === "activity").forEach((n, i) => { n.x = W * .3; n.y = H * (i + .5) / 4; });
+  V.links.forEach(l => {
+    if (l.sNode.kind === "thing" || l.tNode.kind === "thing" || l.tNode.kind === "datatype" || l.tNode.kind === "literal"){
+      const anchor = l.sNode.kind === "thing" ? l.tNode : l.sNode;
+      if (anchor.x == null){ anchor.x = W * .55; anchor.y = H / 2; }
+      const a = (Math.abs(hash(l.id)) % 360) * Math.PI / 180;
+      [l.sNode, l.tNode].forEach((n, k) => { if (n.x == null){ n.x = anchor.x + Math.cos(a) * (80 + k * 40); n.y = anchor.y + Math.sin(a) * (80 + k * 40); } });
+    }
+  });
+  V.nodes.forEach(n => { if (n.x == null){ n.x = W / 2; n.y = H / 2; } });
+  labNodes.forEach(L => { L.x = (L.link.sNode.x + L.link.tNode.x) / 2; L.y = (L.link.sNode.y + L.link.tNode.y) / 2; });
+}
+function hash(s){ let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
+function lcg(){ let s = 20261020; return () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; }
+function rebuildSim(reheat){
+  visNodes = V.nodes.filter(nodeVisible); visLinks = V.links.filter(linkVisible);
+  const visLab = visLinks.map(l => l.lab);
+  V.nodes.forEach(n => elN.get(n.id).toggleAttribute("hidden", !nodeVisible(n)));
+  V.links.forEach(l => { const v = linkVisible(l); elL.get(l.id).toggleAttribute("hidden", !v); elLab.get(l.id).toggleAttribute("hidden", !v); });
+  if (!hasD3){ tick(); return; }
+  const W = vcanvas.clientWidth || 1000, H = vcanvas.clientHeight || 620;
+  const parts = [];
+  visLinks.forEach(l => { parts.push({source: l.sNode, target: l.lab, link: l}); parts.push({source: l.lab, target: l.tNode, link: l}); });
+  const base = l => (l.kind === "datatype" || l.tNode.kind === "thing" || l.sNode.kind === "thing") ? 64 : l.kind === "subclass" ? 110 : l.kind === "source" ? 140 : (l.kind === "used" || l.kind === "generated") ? 100 : 140;
+  const dsN = visNodes.filter(n => n.kind === "dataset");
+  if (!sim){
+    sim = d3.forceSimulation().randomSource(lcg()).alphaDecay(.028).velocityDecay(.42)
+      .force("link", d3.forceLink().id(d => d.id).distance(p => base(p.link) / 2 + (p.source.cr || 14) + (p.target.cr || 14)).strength(p => p.link.kind === "datatype" || p.link.sNode.kind === "thing" || p.link.tNode.kind === "thing" ? 1 : .55))
+      .force("charge", d3.forceManyBody().distanceMax(420))
+      .force("collide", d3.forceCollide().strength(.85).iterations(3))
+      .force("x", d3.forceX()).force("y", d3.forceY())
+      .on("tick", tick);
+  }
+  sim.nodes(visNodes.concat(visLab));
+  sim.force("link").links(parts);
+  sim.force("charge").strength(n => n.isLabel ? -70 : n.kind === "class" || n.kind === "external" ? -360 : n.kind === "dataset" ? -220 : n.kind === "activity" ? -140 : -90);
+  sim.force("collide").radius(n => n.isLabel ? Math.max(15, n.link.lw / 2 + 1) : n.cr + 5);
+  sim.force("x").x(n => n.kind === "dataset" ? 96 : n.kind === "activity" ? W * .27 : n.kind === "external" ? W * .9 : W * .58)
+    .strength(n => n.kind === "dataset" ? .5 : n.kind === "activity" ? .12 : n.kind === "external" ? .1 : n.isLabel ? 0 : .03);
+  sim.force("y").y(n => n.kind === "dataset" ? H * (.08 + .84 * (dsN.indexOf(n) + .5) / Math.max(1, dsN.length)) : H / 2)
+    .strength(n => n.kind === "dataset" ? .4 : n.isLabel ? 0 : .13);
+  if (reheat === "sync"){ sim.stop(); sim.alpha(1); sim.tick(700); sim.alpha(0); tick(); }
+  else if (reheat === "full"){ sim.alpha(1); if (reduceMotion) { sim.stop(); sim.tick(460); sim.alpha(0); tick(); } else sim.restart(); }
+  else if (reheat){ sim.alpha(.45); if (reduceMotion) { sim.stop(); sim.tick(220); sim.alpha(0); tick(); } else sim.restart(); }
+  else { sim.alpha(0); sim.stop(); tick(); }
+}
+function applyPositions(pos){
+  let ok = 0;
+  V.nodes.forEach(n => { const p = pos[n.id]; if (p){ n.x = p[0]; n.y = p[1]; ok++; } });
+  labNodes.forEach(L => { const p = pos[L.id]; if (p){ L.x = p[0]; L.y = p[1]; } });
+  return ok;
+}
+window.__vowlLayout = () => { const o = {}; V.nodes.forEach(n => o[n.id] = [Math.round(n.x * 10) / 10, Math.round(n.y * 10) / 10]); labNodes.forEach(L => o[L.id] = [Math.round(L.x * 10) / 10, Math.round(L.y * 10) / 10]); return o; };
+window.__vowlSettle = () => { if (sim){ sim.stop(); sim.tick(600); tick(); } };
+
+/* ---- zoom and pan ---- */
+let vzoom = null, vtransform = {k: 1, x: 0, y: 0};
+function setZval(){ $("#vzval").textContent = Math.round(vtransform.k * 100) + "%"; }
+function visibleBounds(){
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  visNodes.forEach(n => { x0 = Math.min(x0, n.x - n.cr); y0 = Math.min(y0, n.y - n.cr); x1 = Math.max(x1, n.x + n.cr); y1 = Math.max(y1, n.y + n.cr); });
+  visLinks.forEach(l => { const L = l.lab; x0 = Math.min(x0, L.x - l.lw / 2); y0 = Math.min(y0, L.y - l.lh / 2); x1 = Math.max(x1, L.x + l.lw / 2); y1 = Math.max(y1, L.y + l.lh / 2); });
+  return isFinite(x0) ? {x0, y0, x1, y1} : {x0: 0, y0: 0, x1: 100, y1: 100};
+}
+function fit(animate){
+  const b = visibleBounds(), W = vcanvas.clientWidth, H = vcanvas.clientHeight;
+  const k = Math.min(1.25, .94 * Math.min(W / Math.max(1, b.x1 - b.x0), H / Math.max(1, b.y1 - b.y0)));
+  const tx = W / 2 - k * (b.x0 + b.x1) / 2, ty = H / 2 - k * (b.y0 + b.y1) / 2;
+  if (vzoom){ const t = d3.zoomIdentity.translate(tx, ty).scale(k); if (animate && !reduceMotion) d3.select(vsvg).transition().duration(350).call(vzoom.transform, t); else d3.select(vsvg).call(vzoom.transform, t); }
+  else { vtransform = {k, x: tx, y: ty}; vroot.setAttribute("transform", `translate(${tx},${ty}) scale(${k})`); setZval(); }
+}
+if (hasD3){
+  vzoom = d3.zoom().scaleExtent([.2, 4])
+    .filter(ev => ev.type === "wheel" ? (ev.ctrlKey || ev.metaKey) : ev.type.startsWith("touch") ? (ev.touches && ev.touches.length > 1) : (!ev.button && !ev.target.closest(".vn,.vlab")))
+    .on("start", () => vsvg.classList.add("panning")).on("end", () => vsvg.classList.remove("panning"))
+    .on("zoom", ev => { vtransform = ev.transform; vroot.setAttribute("transform", ev.transform.toString()); setZval(); });
+  d3.select(vsvg).call(vzoom).on("dblclick.zoom", null);
+  $("#vzin").addEventListener("click", () => d3.select(vsvg).transition().duration(reduceMotion ? 0 : 200).call(vzoom.scaleBy, 1.3));
+  $("#vzout").addEventListener("click", () => d3.select(vsvg).transition().duration(reduceMotion ? 0 : 200).call(vzoom.scaleBy, 1 / 1.3));
+} else {
+  const zoomBy = f => { const W = vcanvas.clientWidth / 2, H = vcanvas.clientHeight / 2; vtransform = {k: vtransform.k * f, x: W - (W - vtransform.x) * f, y: H - (H - vtransform.y) * f}; vroot.setAttribute("transform", `translate(${vtransform.x},${vtransform.y}) scale(${vtransform.k})`); setZval(); };
+  $("#vzin").addEventListener("click", () => zoomBy(1.3)); $("#vzout").addEventListener("click", () => zoomBy(1 / 1.3));
+}
+$("#vfit").addEventListener("click", () => fit(true));
+
+/* ---- drag and pin ---- */
+if (hasD3){
+  /* the node's own elements are left alone during a drag: replacing them between mousedown and mouseup would swallow the click */
+  const drag = d3.drag().container(vroot).clickDistance(4)
+    .on("start", (ev, d) => { d.moved = false; d.wasPinned = !!d.pinned; })
+    .on("drag", (ev, d) => { if (!d.moved){ d.moved = true; sim.alphaTarget(.3).restart(); } d.fx = ev.x; d.fy = ev.y; })
+    .on("end", (ev, d) => { if (!d.moved){ if (!d.wasPinned){ d.fx = d.fy = null; } return; } sim.alphaTarget(0); d.pinned = true; addPin(d); });
+  d3.select(gN).selectAll(".vn").data(V.nodes, function(d){ return d ? d.id : this.getAttribute("data-id"); }).call(drag);
+}
+function addPin(n){ const g = elN.get(n.id); if (!g.querySelector(".pin")) g.append(pinMark(n)); }
+function unpin(n){ n.pinned = false; n.fx = n.fy = null; const pin = elN.get(n.id).querySelector(".pin"); if (pin) pin.remove(); }
+$("#vrelease").addEventListener("click", () => { V.nodes.forEach(n => { if (n.pinned) unpin(n); }); rebuildSim(true); });
+$("#vrelayout").addEventListener("click", () => { V.nodes.forEach(n => { if (n.pinned) unpin(n); }); seed(); rebuildSim("full"); if (reduceMotion) fit(false); else setTimeout(() => fit(true), 900); });
+
+/* ---- hover, focus, details ---- */
+let focusId = null;
+function setHover(id, on){ const g = elN.get(id) || elL.get(id); if (g) g.classList.toggle("hov", on); const lab = elLab.get(id); if (lab) lab.classList.toggle("hov", on); }
+function setFocus(id){
+  if (focusId){ [elN.get(focusId), elL.get(focusId), elLab.get(focusId)].forEach(g => g && g.classList.remove("foc")); }
+  focusId = id;
+  if (id){ [elN.get(id), elL.get(id), elLab.get(id)].forEach(g => g && g.classList.add("foc")); }
+}
+function goTo(id){
+  setFocus(id); showInfo(id);
+  const n = nodeById.get(id) || (byIdV.get(id) && byIdV.get(id).lab);
+  if (n && vzoom && n.x != null){
+    const W = vcanvas.clientWidth, H = vcanvas.clientHeight, k = vtransform.k;
+    const t = d3.zoomIdentity.translate(W / 2 - k * n.x, H / 2 - k * n.y).scale(k);
+    d3.select(vsvg).transition().duration(reduceMotion ? 0 : 350).call(vzoom.transform, t);
+  }
+}
+function showInfo(id){
+  const i = id ? V.info[id] : null;
+  vside.textContent = "";
+  if (!i){ showOverview(); return; }
+  vside.append(el("p", {class: "k", text: i.k}), el("h2", {text: i.t}));
+  if (i.label && i.label !== i.t) vside.append(el("p", {class: "cmt", text: i.label}));
+  if (i.iri) vside.append(el("p", {class: "iri"}, el("a", {href: i.iri, target: "_blank", rel: "noopener", text: i.iri})));
+  if (i.comment) vside.append(el("p", {class: "cmt", text: i.comment}));
+  if (i.rows && i.rows.length){ const dl = el("dl"); i.rows.forEach(r => dl.append(el("dt", {text: r[0]}), el("dd", {text: r[1]}))); vside.append(dl); }
+  (i.lists || []).forEach(L => {
+    vside.append(el("h3", {text: L.h}));
+    const ul = el("ul");
+    L.items.forEach(it => { const li = el("li"); if (it.id && byIdV.has(it.id)){ const b = el("button", {type: "button", class: "go", text: it.text}); b.addEventListener("click", () => goTo(it.id)); li.append(b); } else li.textContent = it.text; ul.append(li); });
+    vside.append(ul);
+  });
+  if (i.links && i.links.length) vside.append(el("p", {class: "links"}, ...i.links.map(l => el("a", {href: l[1], target: "_blank", rel: "noopener", text: l[0]}))));
+}
+function showOverview(){
+  const s = V.stats;
+  vside.append(el("p", {class: "k", text: "Ontology and graph"}), el("h2", {text: M.meta.label}),
+    el("p", {class: "cmt", text: "CLEETS Electric Vehicle Adoption Ontology v" + M.meta.onto + " with the dataset records and derivations of the knowledge graph. Click any node or label for its definition, counts and axioms."}));
+  const st = el("div", {class: "stat"});
+  [["Classes", s.classes + " + " + s.external + " external"], ["Object properties", s.objectProps], ["Datatype properties", s.datatypeProps], ["Subclass axioms", s.subclass],
+   ["Disjoint pairs", s.disjoint], ["owl:Thing ends", s.things], ["Individuals", fmt(s.individuals)], ["Datasets", s.datasets + " records, " + s.activities + " derivations"]]
+    .forEach(([k, v]) => st.append(el("div", null, el("b", {text: String(v)}), el("span", {text: k}))));
+  vside.append(st);
+  if (current && current !== "all") vside.append(el("p", {class: "cmt", text: "Dataset " + current + " is highlighted. Faded elements are not reached from it."}));
+}
+[gN, gLab, gL].forEach(container => {
+  container.addEventListener("pointerover", e => { const g = e.target.closest("[data-id]"); if (g) setHover(g.getAttribute("data-id"), true); });
+  container.addEventListener("pointerout", e => { const g = e.target.closest("[data-id]"); if (g) setHover(g.getAttribute("data-id"), false); });
+  container.addEventListener("focusin", e => { const g = e.target.closest("[data-id]"); if (g) setHover(g.getAttribute("data-id"), true); });
+  container.addEventListener("focusout", e => { const g = e.target.closest("[data-id]"); if (g) setHover(g.getAttribute("data-id"), false); });
+});
+vsvg.addEventListener("click", e => {
+  if (e.target.closest(".pin")){ const n = nodeById.get(e.target.closest(".vn").getAttribute("data-id")); if (n){ unpin(n); if (sim) sim.alpha(.2).restart(); } return; }
+  const g = e.target.closest("[data-id]");
+  if (!g){ setFocus(null); showInfo(current !== "all" ? "ds:" + current : null); return; }
+  const id = g.getAttribute("data-id");
+  const n = nodeById.get(id);
+  if (n && n.kind === "dataset"){ select(n.name === current ? "all" : n.name, true); return; }
+  if (focusId === id){ setFocus(null); showInfo(current !== "all" ? "ds:" + current : null); } else { setFocus(id); showInfo(id); }
+});
+vsvg.addEventListener("keydown", e => {
+  const g = e.target.closest && e.target.closest("[data-id]");
+  if (!g) return;
+  if (e.key === "Enter" || e.key === " "){ e.preventDefault(); g.dispatchEvent(new MouseEvent("click", {bubbles: true})); }
+  if (e.key === "Escape"){ setFocus(null); showInfo(current !== "all" ? "ds:" + current : null); }
+});
+vsvg.addEventListener("dblclick", e => { const g = e.target.closest(".vn"); if (g){ const n = nodeById.get(g.getAttribute("data-id")); if (n && n.pinned){ unpin(n); if (sim) sim.alpha(.2).restart(); } } });
+
+/* ---- highlight from the dataset tabs ---- */
+function vowlSelect(id){
+  const hl = V.hl[id];
+  vsvg.classList.toggle("has-sel", !!hl);
+  const on = new Set(hl ? hl.on : []), ctx = new Set(hl ? hl.ctx : []);
+  [elN, elL, elLab].forEach(map => map.forEach((g, key) => { g.classList.toggle("on", on.has(key)); g.classList.toggle("ctx", ctx.has(key)); }));
+  setFocus(null);
+  showInfo(hl ? "ds:" + id : null);
+}
+
+/* ---- options ---- */
+function relabel(){ V.nodes.forEach(n => { sizeNode(n); drawNode(n, elN.get(n.id)); }); V.links.forEach(l => { sizeLabel(l); drawLabel(l, elLab.get(l.id)); }); }
+[["f-datatype", "datatype"], ["f-subclass", "subclass"], ["f-disjoint", "disjoint"], ["f-thing", "thing"], ["f-data", "data"]].forEach(([eid, key]) => {
+  $("#" + eid).addEventListener("change", e => { opts[key] = e.target.checked; rebuildSim(true); });
+});
+$("#o-scale").addEventListener("change", e => { opts.scale = e.target.checked; relabel(); rebuildSim(true); });
+$("#o-compact").addEventListener("change", e => { opts.compact = e.target.checked; vsvg.classList.toggle("compact", opts.compact); });
+document.querySelectorAll("input[name=o-labels]").forEach(r => r.addEventListener("change", e => { if (e.target.checked){ opts.labels = e.target.value; relabel(); rebuildSim(true); } }));
+
+/* ---- copy as SVG ---- */
+function svgMarkup(){
+  const c = vsvg.cloneNode(true);
+  c.querySelectorAll(".hit,.hitr,[hidden]").forEach(x => x.remove());
+  c.removeAttribute("class"); c.removeAttribute("role"); c.removeAttribute("aria-label");
+  const b = visibleBounds(), pad = 20;
+  c.setAttribute("viewBox", `${b.x0 - pad} ${b.y0 - pad} ${b.x1 - b.x0 + 2 * pad} ${b.y1 - b.y0 + 2 * pad}`);
+  c.setAttribute("width", Math.round(b.x1 - b.x0 + 2 * pad)); c.setAttribute("height", Math.round(b.y1 - b.y0 + 2 * pad));
+  c.querySelector(".root").removeAttribute("transform");
+  c.querySelector("style").textContent = VOWL_CSS + "\n.has-sel .on,.has-sel .ctx{opacity:1}";
+  c.insertBefore(sv("rect", {x: b.x0 - pad, y: b.y0 - pad, width: b.x1 - b.x0 + 2 * pad, height: b.y1 - b.y0 + 2 * pad, fill: "#fff"}), c.querySelector(".root"));
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(c);
+}
+$("#vcopy").addEventListener("click", () => {
+  const txt = svgMarkup(), box = $("#vcopybox"), ta = $("#vcopytext"), msg = $("#vcopymsg");
+  const show = (m) => { msg.textContent = m; ta.value = txt; box.hidden = false; ta.focus(); ta.select(); };
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(() => show("Copied to the clipboard as SVG. Paste into Inkscape, Illustrator, PowerPoint or a text editor and save as .svg."), () => show("The clipboard was refused here. Select the text below and copy it."));
+  } else show("Select the text below and copy it, then save it as an .svg file.");
+});
+$("#vcopyclose").addEventListener("click", () => { $("#vcopybox").hidden = true; });
+
+/* ---- view switch ---- */
+let lastFitW = 0;
+function setView(v, remember){
+  const graph = v === "graph";
+  $("#vowl").hidden = !graph; document.querySelector(".map").hidden = graph;
+  $("#view-graph").setAttribute("aria-pressed", String(graph)); $("#view-schematic").setAttribute("aria-pressed", String(!graph));
+  if (remember){ try { localStorage.setItem("cleets-kg-view", v); } catch (err) { /* storage may be unavailable */ } }
+  if (graph){ if (vcanvas.clientWidth !== lastFitW){ lastFitW = vcanvas.clientWidth; fit(false); } } else { applyZoom(); fitText(); }
+}
+$("#view-graph").addEventListener("click", () => setView("graph", true));
+$("#view-schematic").addEventListener("click", () => setView("schematic", true));
+
+/* ---- start ---- */
+var vowlReady = false;
+(function startVowl(){
+  const baked = V.pos && applyPositions(V.pos) === V.nodes.length;
+  if (!baked) seed();
+  rebuildSim(baked ? false : "sync");
+  lastFitW = vcanvas.clientWidth; fit(false);
+  if (window.ResizeObserver) new ResizeObserver(() => { const w = vcanvas.clientWidth; if (w && Math.abs(w - lastFitW) > 40){ lastFitW = w; fit(false); } }).observe(vcanvas);
+  vowlReady = true;
+})();
+let startView = "graph";
+try { const v = localStorage.getItem("cleets-kg-view"); if (v === "schematic") startView = v; } catch (err) { /* ignore */ }
+
+applyZoom();
+let start = "all";
+try { const h = decodeURIComponent((location.hash || "").slice(1)); if (M.panels[h]) start = h; } catch (err) { /* ignore */ }
+select(start, false);
+setView(startView, false);
+fitText();
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitText);
+})();
+</script>

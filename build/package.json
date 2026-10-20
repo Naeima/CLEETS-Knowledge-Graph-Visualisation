@@ -1,0 +1,11 @@
+{
+  "name": "cleets-kg-visualisation-build",
+  "private": true,
+  "description": "Local copies of the pages' web dependencies for headless layout baking, screenshots and tests",
+  "devDependencies": {
+    "@fontsource/barlow": "5.3.0",
+    "@fontsource/barlow-semi-condensed": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "d3": "7.9.0"
+  }
+}

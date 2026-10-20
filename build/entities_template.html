@@ -1,0 +1,836 @@
+<title>CLEETS-KG Entity Explorer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&amp;family=Barlow+Semi+Condensed:wght@500;600&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+<style>
+/* Layout: dataset tabs, a toolbar (search, layout, relations, zoom), a full-width canvas with a details panel, a type legend.
+   Every individual in the graph is a dot; hubs are labelled; everything else appears as you zoom in. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --band:#f6f8fa; --canvas:#fbfcfd;
+  --ink:#15191e; --ink-2:#47515c; --ink-3:#6a7480; --line:#d5dbe1; --line-2:#aab4bf; --edge:#8d97a2; --halo:#ffffff;
+  --tip-bg:#15191e; --tip-ink:#f2f5f7; --tip-dim:#aeb8c2;
+  --f-display:"Barlow Semi Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --scheme:light;
+  /*__PALETTE_LIGHT__*/
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1115; --surface:#141920; --band:#1a2027; --canvas:#10151b;
+    --ink:#e9edf1; --ink-2:#b7c0ca; --ink-3:#8b96a2; --line:#2a323b; --line-2:#4a5561; --edge:#5f6a77; --halo:#10151b;
+    --tip-bg:#e9edf1; --tip-ink:#15191e; --tip-dim:#4d5762;
+    --scheme:dark;
+    /*__PALETTE_DARK__*/
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1115; --surface:#141920; --band:#1a2027; --canvas:#10151b;
+  --ink:#e9edf1; --ink-2:#b7c0ca; --ink-3:#8b96a2; --line:#2a323b; --line-2:#4a5561; --edge:#5f6a77; --halo:#10151b;
+  --tip-bg:#e9edf1; --tip-ink:#15191e; --tip-dim:#4d5762;
+  --scheme:dark;
+  /*__PALETTE_DARK__*/
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-body);-webkit-text-size-adjust:100%}
+.wrap{max-width:1500px;margin:0 auto;padding-inline:clamp(16px,2.2vw,28px);padding-block:22px 40px;display:flex;flex-direction:column;gap:12px}
+h1,h2,h3,p,dl,dd,ul,figure,pre{margin:0}
+code{font-family:var(--f-mono);font-size:.86em;background:var(--band);border:1px solid var(--line);border-radius:4px;padding:.04em .32em;overflow-wrap:anywhere}
+a{color:inherit;text-underline-offset:2px}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button{font:inherit}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 40px}
+.top>div{display:flex;flex-direction:column;gap:5px}
+.eyebrow{font:500 12.5px var(--f-mono);color:var(--ink-3)}
+h1{font:600 clamp(24px,3vw,32px)/1.1 var(--f-display);letter-spacing:.005em;text-wrap:balance}
+.lede{flex:1 1 380px;max-width:66ch;color:var(--ink-2)}
+.lede a{white-space:nowrap}
+
+.tabs{display:flex;flex-wrap:wrap;gap:6px;padding-block:6px}
+.tab{font:500 14.5px/1 var(--f-display);letter-spacing:.01em;color:var(--ink-2);background:var(--surface);border:1px solid var(--line);
+  border-radius:7px;padding:8px 12px 8px 10px;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+.tab:hover{border-color:var(--line-2);color:var(--ink)}
+.tab .dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.tab.all .dot{background:none;border:1.5px solid currentColor}
+.tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.tab[aria-selected="true"] .dot{box-shadow:0 0 0 1.5px var(--ink),0 0 0 3px var(--surface)}
+
+.ex{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.grp{display:inline-flex;align-items:center;gap:6px;position:relative}
+.tb{font:500 13.5px/1 var(--f-display);color:var(--ink-2);background:var(--surface);border:1px solid var(--line);border-radius:6px;min-width:32px;height:32px;padding:0 10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.tb:hover:not(:disabled){border-color:var(--line-2);color:var(--ink)}
+.tb[aria-pressed="true"],.tb[aria-expanded="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.tb:disabled{opacity:.4;cursor:default}
+output.z{font:500 12px var(--f-mono);color:var(--ink-3);min-width:44px;text-align:center}
+.search{position:relative;flex:1 1 240px;max-width:420px}
+.search input{width:100%;height:32px;font:400 14px var(--f-body);color:var(--ink);background:var(--band);border:1px solid var(--line);border-radius:6px;padding:0 10px 0 30px}
+.search input:focus{border-color:var(--line-2);background:var(--surface)}
+.search svg{position:absolute;left:9px;top:8px;pointer-events:none}
+.results{position:absolute;top:36px;left:0;right:0;z-index:12;background:var(--surface);border:1px solid var(--line-2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:320px;overflow:auto;padding:4px}
+.results button{display:flex;align-items:center;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:6px;padding:6px 8px;font-size:13.5px;color:var(--ink);cursor:pointer}
+.results button:hover,.results button.cur{background:var(--band)}
+.results .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.results .k{color:var(--ink-3);font-size:12px;margin-left:auto;white-space:nowrap}
+.results .more{color:var(--ink-3);font-size:12.5px;padding:6px 8px}
+.pop{position:absolute;top:36px;left:0;z-index:12;min-width:260px;max-width:min(380px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line-2);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:10px 12px;display:flex;flex-direction:column;gap:6px;max-height:360px;overflow:auto}
+.pop label{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer}
+.pop label .n{margin-left:auto;color:var(--ink-3);font:500 12px var(--f-mono)}
+.pop input{margin:0;accent-color:var(--ink)}
+.pop .row{display:flex;gap:10px;font-size:12.5px;color:var(--ink-3);padding-bottom:4px;border-bottom:1px solid var(--line)}
+.pop .row button{background:none;border:0;padding:0;color:var(--ink-2);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.views{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.views button{font:500 13.5px/1 var(--f-display);color:var(--ink-2);background:var(--surface);border:0;height:30px;padding:0 11px;cursor:pointer}
+.views button+button{border-left:1px solid var(--line)}
+.views button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+
+.body{display:grid;grid-template-columns:minmax(0,1fr) 320px;min-height:420px}
+@media (max-width:980px){.body{grid-template-columns:1fr}}
+.stage{position:relative;background:var(--canvas);border-right:1px solid var(--line);height:min(780px,80vh);min-width:0;overflow:hidden;touch-action:none}
+@media (max-width:980px){.stage{border-right:0;border-bottom:1px solid var(--line);height:min(560px,70vh)}}
+.stage canvas{display:block;width:100%;height:100%;cursor:grab}
+.stage canvas.drag{cursor:grabbing}
+.stage canvas.pick{cursor:pointer}
+.hint{position:absolute;left:10px;bottom:8px;margin:0;font:400 11.5px/1.3 var(--f-body);color:var(--ink-3);background:color-mix(in srgb,var(--canvas) 85%,transparent);padding:3px 7px;border-radius:5px;pointer-events:none;max-width:calc(100% - 20px)}
+.count{position:absolute;right:10px;top:8px;margin:0;font:500 11.5px/1.3 var(--f-mono);color:var(--ink-3);background:color-mix(in srgb,var(--canvas) 85%,transparent);padding:3px 7px;border-radius:5px;pointer-events:none}
+.tip{position:fixed;z-index:20;max-width:min(360px,calc(100vw - 16px));background:var(--tip-bg);color:var(--tip-ink);border-radius:8px;padding:8px 11px 9px;font-size:13px;line-height:1.4;pointer-events:none;box-shadow:0 6px 22px rgba(0,0,0,.22)}
+.tip .k{font:600 10.5px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--tip-dim)}
+.tip .t{font-weight:600}
+.tip .i{font:400 11.5px/1.35 var(--f-mono);color:var(--tip-dim);overflow-wrap:anywhere}
+
+.side{padding:14px 16px 18px;overflow:auto;max-height:min(780px,80vh);font-size:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+@media (max-width:980px){.side{max-height:none}}
+.side .k{font:600 11px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.side h2{font:600 18px/1.25 var(--f-display);overflow-wrap:anywhere;display:flex;align-items:center;gap:8px}
+.side h2 .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.side .iri{font:400 12px/1.4 var(--f-mono);overflow-wrap:anywhere;color:var(--ink-2)}
+.side .cmt{color:var(--ink-2);font-size:13.5px}
+.side h3{font:600 11px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin-top:6px;display:flex;align-items:baseline;gap:8px}
+.side h3 .n{font:500 11px var(--f-mono);color:var(--ink-3);letter-spacing:0;text-transform:none}
+.side dl{display:grid;grid-template-columns:minmax(72px,36%) minmax(0,1fr);gap:3px 10px;font-size:13.5px}
+.side dt{color:var(--ink-3);font-family:var(--f-mono);font-size:12px;overflow-wrap:anywhere}
+.side dd{overflow-wrap:anywhere}
+.side ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:3px;font-size:13.5px}
+.side li{display:flex;align-items:flex-start;gap:7px;overflow-wrap:anywhere;min-width:0}
+.side li .dot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:6px}
+.side button.go{font:inherit;color:inherit;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line-2);min-width:0;overflow-wrap:anywhere}
+.side button.go:hover{text-decoration-color:var(--ink)}
+.side button.more{font:500 12.5px var(--f-display);color:var(--ink-2);background:var(--band);border:1px solid var(--line);border-radius:5px;padding:3px 8px;cursor:pointer;align-self:flex-start}
+.side .pred{font:500 12px var(--f-mono);color:var(--ink-3);margin-top:4px}
+.side .stat{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:13.5px}
+.side .stat b{display:block;font:600 18px/1.1 var(--f-display)}
+.side .stat span{color:var(--ink-3);font-size:12px}
+.side .acts{display:flex;flex-wrap:wrap;gap:6px}
+.legend{display:flex;flex-wrap:wrap;gap:10px 22px;padding:10px 16px 12px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-2)}
+.legend .grp2{display:flex;flex-direction:column;gap:3px;min-width:150px}
+.legend .gh{font:600 10.5px/1.3 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.legend label{display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap}
+.legend label .sw{width:10px;height:10px;border-radius:50%;flex:none}
+.legend label .sw.hub{width:12px;height:12px;box-shadow:0 0 0 1.5px var(--surface),0 0 0 2.5px currentColor}
+.legend label .n{color:var(--ink-3);font:500 11px var(--f-mono)}
+.legend input{margin:0;accent-color:var(--ink)}
+.legend .note{flex-basis:100%;color:var(--ink-3)}
+footer{font-size:13px;color:var(--ink-3);max-width:100ch}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow" id="eyebrow"></p>
+      <h1>CLEETS-KG entity explorer</h1>
+    </div>
+    <p class="lede" id="lede">Every individual in the graph as a node and every link between them as an edge: observations, districts, quarters, population figures, dataset records, agents, source-row fingerprints. Search for an entity, click it for its properties and links, and follow the graph from there.</p>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Highlight the entities of one dataset"></div>
+
+  <figure class="ex">
+    <div class="bar">
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="none" stroke="#8b96a2" stroke-width="1.6"/><path d="M9.5,9.5L13,13" stroke="#8b96a2" stroke-width="1.8"/></svg>
+        <input type="search" id="q" placeholder="Search entities (Cardiff, W06000015, 2024-Q4, EVCI9001…)" autocomplete="off" aria-label="Search entities" aria-controls="results" aria-expanded="false">
+        <div class="results" id="results" hidden role="listbox"></div>
+      </div>
+      <div class="grp">
+        <span class="k" style="font:600 11px/1 var(--f-display);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)">Layout</span>
+        <div class="views" role="group" aria-label="Layout">
+          <button type="button" id="lay-s" aria-pressed="true">Structured</button>
+          <button type="button" id="lay-f" aria-pressed="false">Force-directed</button>
+        </div>
+      </div>
+      <div class="grp">
+        <button type="button" class="tb" id="relbtn" aria-expanded="false" aria-controls="relpop">Relations <span id="relcount"></span></button>
+        <div class="pop" id="relpop" hidden></div>
+      </div>
+      <div class="grp">
+        <button type="button" class="tb" id="lblbtn" aria-pressed="true">Labels</button>
+        <button type="button" class="tb" id="nbbtn" aria-pressed="false" disabled title="Show only the selected entity and its neighbours">Neighbourhood</button>
+      </div>
+      <div class="grp" role="group" aria-label="Zoom" style="margin-left:auto">
+        <button type="button" class="tb" id="zout" aria-label="Zoom out">−</button>
+        <output class="z" id="zval">100%</output>
+        <button type="button" class="tb" id="zin" aria-label="Zoom in">+</button>
+        <button type="button" class="tb" id="fit">Fit</button>
+      </div>
+    </div>
+    <div class="body">
+      <div class="stage" id="stage">
+        <canvas id="cv" role="img" aria-label="Map of every entity in CLEETS-KG. Use the search box and the details panel to read it."></canvas>
+        <p class="count" id="count"></p>
+        <p class="hint" id="hint">Scroll or pinch to zoom, drag to pan. Point at a dot for its name, click for its properties, double-click to zoom in on it.</p>
+      </div>
+      <aside class="side" id="side" aria-live="polite"></aside>
+    </div>
+    <figcaption class="legend" id="legend"></figcaption>
+  </figure>
+
+  <footer id="foot"></footer>
+  <noscript><p>This page draws its graph with JavaScript. Enable it to see the entities.</p></noscript>
+</div>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script id="model" type="application/json">/*__MODEL__*/</script>
+<script>
+(function(){
+"use strict";
+const M = JSON.parse(document.getElementById("model").textContent);
+const N = M.label.length, EN = M.edges.length / 3;
+const $ = s => document.querySelector(s);
+const fmt = n => n.toLocaleString("en-GB");
+function el(tag, attrs, ...kids){
+  const e = document.createElement(tag);
+  for (const k in (attrs || {})){ const v = attrs[k]; if (v == null || v === false) continue; if (k === "class") e.className = v; else if (k === "text") e.textContent = v; else e.setAttribute(k, v); }
+  for (const c of kids) if (c != null) e.append(c);
+  return e;
+}
+const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- model indexes ---------- */
+const kindLight = {}, kindDark = {}, kindHub = {}, kindName = M.kinds;
+M.legend.forEach(g => g.kinds.forEach(k => { kindLight[k.name] = k.c; kindDark[k.name] = k.cd || k.c; kindHub[k.name] = k.hub; }));
+const colourOfKind = M.kinds.map(k => kindLight[k] || "#999");   // refreshed by readTheme(); --k<i> mirrors it for the DOM
+const hubOfKind = M.kinds.map(k => !!kindHub[k]);
+const E = M.edges;
+const outE = new Array(N), inE = new Array(N);
+for (let i = 0; i < N; i++){ outE[i] = []; inE[i] = []; }
+for (let e = 0; e < EN; e++){ outE[E[3 * e]].push(e); inE[E[3 * e + 2]].push(e); }
+const predIdx = {}; M.preds.forEach((p, i) => predIdx[p] = i);
+
+/* ---------- state ---------- */
+const state = {layout: "S", k: 1, tx: 0, ty: 0, sel: -1, hover: -1, dataset: null, datasetExtra: new Set(), labels: true, neighbourhood: false,
+  kindOn: M.kinds.map(() => true), predOn: M.preds.map(() => true), pos: null};
+state.pos = Float32Array.from(M.posS);
+const rw = new Float32Array(N);
+for (let i = 0; i < N; i++) rw[i] = (hubOfKind[M.kind[i]] ? 9 : 3.2) + 1.6 * Math.log2(M.deg[i] + 1);
+const minR = 1.1;
+function radiusPx(i, k){ const b = rw[i] * k; return hubOfKind[M.kind[i]] ? Math.max(4.5, Math.min(18, b)) : Math.max(minR, Math.min(14, b)); }
+
+/* ---------- colours from the page theme ---------- */
+let theme = {};
+function readTheme(){
+  const cs = getComputedStyle(document.documentElement);
+  const v = n => cs.getPropertyValue(n).trim();
+  theme = {canvas: v("--canvas"), edge: v("--edge"), ink: v("--ink"), ink2: v("--ink-2"), ink3: v("--ink-3"), halo: v("--halo"), surface: v("--surface"), dark: v("--scheme") === "dark"};
+  M.kinds.forEach((k, i) => { colourOfKind[i] = (theme.dark ? kindDark[k] : kindLight[k]) || "#999"; document.documentElement.style.setProperty("--k" + i, colourOfKind[i]); });
+}
+readTheme();
+if (window.matchMedia){ try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { readTheme(); render(); }); } catch (err) { /* older engines */ } }
+new MutationObserver(() => { readTheme(); render(); }).observe(document.documentElement, {attributes: true, attributeFilter: ["data-theme"]});
+
+/* ---------- canvas ---------- */
+const stage = $("#stage"), cv = $("#cv"), ctx = cv.getContext("2d");
+let W = 0, H = 0, dpr = 1, baseK = 1;
+function resize(){
+  const r = stage.getBoundingClientRect();
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  render();
+}
+function worldBounds(pos){
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (let i = 0; i < N; i++){ if (!visible(i)) continue; const x = pos[2 * i], y = pos[2 * i + 1]; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  return isFinite(x0) ? {x0, y0, x1, y1} : {x0: -1, y0: -1, x1: 1, y1: 1};
+}
+function fitView(pos){
+  const b = worldBounds(pos || state.pos), pad = nbSet ? 84 : 36;
+  const k = Math.min((W - 2 * pad) / Math.max(1, b.x1 - b.x0), (H - 2 * pad) / Math.max(1, b.y1 - b.y0));
+  return {k, tx: W / 2 - k * (b.x0 + b.x1) / 2, ty: H / 2 - k * (b.y0 + b.y1) / 2};
+}
+function fit(pos){
+  const v = fitView(pos);
+  state.k = v.k; state.tx = v.tx; state.ty = v.ty; baseK = v.k;
+  render();
+}
+function zoomAt(f, cx, cy){
+  const k2 = Math.max(baseK * .5, Math.min(baseK * 400, state.k * f)); f = k2 / state.k;
+  state.tx = cx - (cx - state.tx) * f; state.ty = cy - (cy - state.ty) * f; state.k = k2;
+  render();
+}
+function zoomTo(i, k){
+  const x = state.pos[2 * i], y = state.pos[2 * i + 1];
+  const k2 = k || Math.max(state.k, baseK * 10);
+  animateView(k2, W / 2 - k2 * x, H / 2 - k2 * y);
+}
+let viewAnim = null;
+function animateView(k, tx, ty){
+  if (reduceMotion){ state.k = k; state.tx = tx; state.ty = ty; render(); return; }
+  const from = {k: state.k, tx: state.tx, ty: state.ty}, t0 = performance.now();
+  cancelAnimationFrame(viewAnim);
+  const step = now => {
+    const t = Math.min(1, (now - t0) / 420), e = 1 - Math.pow(1 - t, 3);
+    const lk = Math.exp(Math.log(from.k) + (Math.log(k) - Math.log(from.k)) * e);
+    state.k = lk; state.tx = from.tx + (tx - from.tx) * e; state.ty = from.ty + (ty - from.ty) * e; render();
+    if (t < 1) viewAnim = requestAnimationFrame(step);
+  };
+  viewAnim = requestAnimationFrame(step);
+}
+
+/* ---------- spatial index for picking (rebuilt per layout) ---------- */
+const CELL = 48;
+let grid = new Map();
+function buildGrid(){
+  grid = new Map();
+  for (let i = 0; i < N; i++){ const key = Math.floor(state.pos[2 * i] / CELL) + "," + Math.floor(state.pos[2 * i + 1] / CELL); let a = grid.get(key); if (!a){ a = []; grid.set(key, a); } a.push(i); }
+}
+function pick(sx, sy){
+  const k = state.k, wx = (sx - state.tx) / k, wy = (sy - state.ty) / k;
+  const reach = 24 / k;   // the largest hit radius, in world units
+  const cx = Math.floor(wx / CELL), cy = Math.floor(wy / CELL), span = Math.ceil(reach / CELL);
+  let best = -1, bd = Infinity;
+  for (let gx = cx - span; gx <= cx + span; gx++) for (let gy = cy - span; gy <= cy + span; gy++){
+    const a = grid.get(gx + "," + gy); if (!a) continue;
+    for (const i of a){
+      if (!visible(i)) continue;
+      const dx = state.pos[2 * i] * k + state.tx - sx, dy = state.pos[2 * i + 1] * k + state.ty - sy, d = Math.sqrt(dx * dx + dy * dy);
+      const r = Math.max(6, radiusPx(i, k)) + 2;   // screen pixels
+      if (d <= r && d < bd){ bd = d; best = i; }
+    }
+  }
+  return best;
+}
+
+/* ---------- visibility ---------- */
+let nbSet = null;   // neighbourhood mode: ids visible
+function visible(i){
+  if (!state.kindOn[M.kind[i]]) return false;
+  if (nbSet && !nbSet.has(i)) return false;
+  return true;
+}
+function faded(i){
+  if (!state.dataset) return false;
+  return !(M.src[i] & state.dataset.bit) && !state.datasetExtra.has(i);
+}
+
+/* ---------- edge bundles ----------
+   Links that leave a cluster (a district's disc of observations, a quarter and its instants, a dataset record and its
+   satellites) are drawn as one line per cluster and target, with its width by the number of links. Drawing the 35,000
+   individual links that converge on the hubs in the centre would paint the centre a uniform grey at every zoom level.
+   The individual links are drawn for the selected and the pointed-at entity, and for everything in neighbourhood mode. */
+const CL = M.cl;
+let bundles = [], bundledTotal = 0;
+function edgeWeight(s, t, dim){   // 2 both ends highlighted (or no highlight), 1 one end, 0 none
+  if (!dim) return 2;
+  const a = faded(s), b = faded(t);
+  return a && b ? 0 : (a || b ? 1 : 2);
+}
+function rebuildBundles(){
+  bundles = []; bundledTotal = 0;
+  if (nbSet) return;
+  const dim = state.dataset != null, map = new Map();
+  for (let e = 0; e < EN; e++){
+    const s = E[3 * e], t = E[3 * e + 2], ca = CL[s], cb = CL[t];
+    if (ca === cb || !state.predOn[E[3 * e + 1]] || !visible(s) || !visible(t)) continue;
+    const w = edgeWeight(s, t, dim); if (!w) continue;
+    const key = ca * N + cb;
+    let b = map.get(key); if (!b){ b = {a: ca, b: cb, n: 0, full: 0}; map.set(key, b); }
+    b.n++; if (w === 2) b.full++;
+  }
+  bundles = [...map.values()].sort((p, q) => p.n - q.n);
+  bundles.forEach(b => { b.w = Math.round(2 * Math.min(4, .35 + .5 * Math.log2(b.n))) / 2; bundledTotal += b.n; });
+}
+
+/* ---------- drawing ---------- */
+let renderQueued = false;
+function render(){ if (!renderQueued){ renderQueued = true; requestAnimationFrame(draw); } }
+const visEdges = new Int32Array(EN);   // edges in view this frame, for the arrowhead and label passes
+function draw(){
+  renderQueued = false;
+  const k = state.k, tx = state.tx, ty = state.ty, pos = state.pos;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = theme.canvas; ctx.fillRect(0, 0, W, H);
+  const sel = state.sel, hov = state.hover;
+  const nb = new Set();
+  if (sel >= 0){ outE[sel].forEach(e => nb.add(E[3 * e + 2])); inE[sel].forEach(e => nb.add(E[3 * e])); }
+  /* edges inside clusters, individually; in neighbourhood mode every link between visible nodes */
+  const x0 = -tx / k - 50, y0 = -ty / k - 50, x1 = (W - tx) / k + 50, y1 = (H - ty) / k + 50;
+  const dim = state.dataset != null;
+  const zoom = k / baseK;
+  const aFull = zoom < 3 ? (theme.dark ? .22 : .14) : (theme.dark ? .42 : .32);
+  const offView = (ax, ay, bx, by) => (ax < x0 && bx < x0) || (ax > x1 && bx > x1) || (ay < y0 && by < y0) || (ay > y1 && by > y1);
+  let drawn = 0, inView = 0;
+  ctx.strokeStyle = theme.edge; ctx.lineWidth = Math.max(.35, Math.min(1.2, .35 * zoom));
+  for (const pass of [2, 1]){
+    if (pass === 1 && !dim) break;
+    ctx.globalAlpha = pass === 2 ? aFull : aFull * .4;
+    ctx.beginPath();
+    for (let e = 0; e < EN; e++){
+      const s = E[3 * e], t = E[3 * e + 2];
+      if (!nbSet && CL[s] !== CL[t]) continue;
+      if (!state.predOn[E[3 * e + 1]] || !visible(s) || !visible(t)) continue;
+      if (edgeWeight(s, t, dim) !== pass) continue;
+      if (sel >= 0 && (s === sel || t === sel)) continue;
+      if (hov >= 0 && (s === hov || t === hov)) continue;
+      const ax = pos[2 * s], ay = pos[2 * s + 1], bx = pos[2 * t], by = pos[2 * t + 1];
+      if (offView(ax, ay, bx, by)) continue;
+      ctx.moveTo(ax * k + tx, ay * k + ty); ctx.lineTo(bx * k + tx, by * k + ty); visEdges[drawn++] = e;
+    }
+    ctx.stroke();
+  }
+  inView = drawn;
+  /* bundles between clusters */
+  if (!nbSet && bundles.length){
+    ctx.lineCap = "round";
+    let curW = -1;
+    for (const b of bundles){
+      if (b.a === sel || b.b === sel || b.a === hov || b.b === hov) continue;   // those links are drawn individually
+      const ax = pos[2 * b.a], ay = pos[2 * b.a + 1], bx = pos[2 * b.b], by = pos[2 * b.b + 1];
+      if (offView(ax, ay, bx, by)) continue;
+      const w = b.w * Math.min(1, Math.max(.6, .55 + zoom * .15));
+      if (w !== curW){ if (curW >= 0) ctx.stroke(); curW = w; ctx.lineWidth = w; ctx.globalAlpha = (b.full ? aFull : aFull * .4) * (zoom < 1.5 ? .85 : .7); ctx.beginPath(); }
+      ctx.moveTo(ax * k + tx, ay * k + ty); ctx.lineTo(bx * k + tx, by * k + ty); inView += b.n;
+    }
+    if (curW >= 0) ctx.stroke();
+    ctx.lineCap = "butt";
+  }
+  /* the selection's and the pointer's own links, whatever the relation filter says */
+  let selEdges = [];
+  const ownLinks = (i, alpha, width, colour) => {
+    ctx.globalAlpha = alpha; ctx.lineWidth = width; ctx.strokeStyle = colour;
+    ctx.beginPath();
+    const draw1 = e => { const s = E[3 * e], t = E[3 * e + 2]; ctx.moveTo(pos[2 * s] * k + tx, pos[2 * s + 1] * k + ty); ctx.lineTo(pos[2 * t] * k + tx, pos[2 * t + 1] * k + ty); selEdges.push(e); };
+    outE[i].forEach(e => { if (visible(E[3 * e + 2])) draw1(e); });
+    inE[i].forEach(e => { if (visible(E[3 * e])) draw1(e); });
+    ctx.stroke();
+  };
+  /* a hub's thousands of links are drawn thin and faint, so they read as a fan rather than a solid starburst */
+  const fan = (i, a, w) => { const d = M.deg[i]; return d > 300 ? [Math.max(.1, Math.min(a, 150 / d)), Math.max(.5, Math.min(1, .5 * zoom))] : [a, w]; };
+  if (hov >= 0 && hov !== sel && visible(hov)) ownLinks(hov, ...fan(hov, .55, Math.max(.8, Math.min(1.6, .5 * zoom))), theme.ink3);
+  if (sel >= 0 && visible(sel)) ownLinks(sel, ...fan(sel, .85, Math.max(1, Math.min(2.2, .6 * zoom))), theme.ink2);
+  inView += selEdges.length;
+  /* direction and relation names once few enough links are in view */
+  const few = drawn + selEdges.length;
+  if (few <= 1500 && (zoom >= 4 || nbSet)){
+    const edgeAt = j => j < drawn ? visEdges[j] : selEdges[j - drawn];
+    ctx.globalAlpha = 1;
+    for (let j = 0; j < few; j++){
+      const e = edgeAt(j), s = E[3 * e], t = E[3 * e + 2];
+      const ax = pos[2 * s] * k + tx, ay = pos[2 * s + 1] * k + ty, bx = pos[2 * t] * k + tx, by = pos[2 * t + 1] * k + ty;
+      const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy); if (L < 14) continue;
+      const ux = dx / L, uy = dy / L, rt = radiusPx(t, k) + 1, hx = bx - ux * rt, hy = by - uy * rt, a = 4.5;
+      const own = j >= drawn;
+      ctx.fillStyle = own ? theme.ink2 : theme.edge; ctx.globalAlpha = own ? .9 : (zoom < 3 ? .3 : .5);
+      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx - ux * a * 1.8 - uy * a, hy - uy * a * 1.8 + ux * a); ctx.lineTo(hx - ux * a * 1.8 + uy * a, hy - uy * a * 1.8 - ux * a); ctx.closePath(); ctx.fill();
+    }
+    if (few <= 260 && state.labels){
+      ctx.font = "500 10.5px 'IBM Plex Mono', Menlo, Consolas, monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+      const stacked = new Map();   // parallel links between the same two nodes get their names stacked
+      for (let j = 0; j < few; j++){
+        const e = edgeAt(j), s = E[3 * e], t = E[3 * e + 2];
+        const ax = pos[2 * s] * k + tx, ay = pos[2 * s + 1] * k + ty, bx = pos[2 * t] * k + tx, by = pos[2 * t + 1] * k + ty;
+        if (Math.hypot(bx - ax, by - ay) < 70) continue;
+        const own = j >= drawn, key = Math.min(s, t) * N + Math.max(s, t), row = stacked.get(key) || 0; stacked.set(key, row + 1);
+        ctx.globalAlpha = own ? 1 : .8; ctx.lineWidth = 3; ctx.strokeStyle = theme.canvas; ctx.fillStyle = own ? theme.ink2 : theme.ink3;
+        const mx = (ax + bx) / 2, my = (ay + by) / 2 + row * 13, p = M.preds[E[3 * e + 1]];
+        ctx.strokeText(p, mx, my); ctx.fillText(p, mx, my);
+      }
+      ctx.textAlign = "start";
+    }
+  }
+  /* nodes: the smallest as squares, the rest as discs */
+  ctx.globalAlpha = 1;
+  const order = [];
+  for (let i = 0; i < N; i++){
+    if (!visible(i)) continue;
+    const x = pos[2 * i] * k + tx, y = pos[2 * i + 1] * k + ty;
+    const r = radiusPx(i, k);
+    if (x < -r || x > W + r || y < -r || y > H + r) continue;
+    const f = dim && faded(i);
+    ctx.fillStyle = colourOfKind[M.kind[i]];
+    ctx.globalAlpha = f ? .13 : 1;
+    if (r < 1.9){ ctx.fillRect(x - r, y - r, 2 * r, 2 * r); }
+    else { ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); if (r >= 4){ ctx.lineWidth = 1; ctx.strokeStyle = theme.halo; ctx.globalAlpha = f ? .13 : .9; ctx.stroke(); } }
+    if (r >= 3 || nb.has(i) || i === sel || i === hov) order.push(i);
+  }
+  ctx.globalAlpha = 1;
+  /* selection and neighbours */
+  if (sel >= 0 && visible(sel)){
+    nb.forEach(i => { if (!visible(i)) return; const x = pos[2 * i] * k + tx, y = pos[2 * i + 1] * k + ty, r = Math.max(2.4, radiusPx(i, k)); ctx.beginPath(); ctx.arc(x, y, r + 1.5, 0, 6.2832); ctx.lineWidth = 1.5; ctx.strokeStyle = theme.ink; ctx.stroke(); });
+    const x = pos[2 * sel] * k + tx, y = pos[2 * sel + 1] * k + ty, r = Math.max(4, radiusPx(sel, k));
+    ctx.beginPath(); ctx.arc(x, y, r + 3, 0, 6.2832); ctx.lineWidth = 2.5; ctx.strokeStyle = theme.ink; ctx.stroke();
+  }
+  if (hov >= 0 && hov !== sel && visible(hov)){
+    const x = pos[2 * hov] * k + tx, y = pos[2 * hov + 1] * k + ty, r = Math.max(3, radiusPx(hov, k));
+    ctx.beginPath(); ctx.arc(x, y, r + 2, 0, 6.2832); ctx.lineWidth = 1.5; ctx.strokeStyle = theme.ink2; ctx.stroke();
+  }
+  /* labels: the selection and the pointer first, then hubs by degree, the selection's neighbours, then the rest once zoomed in.
+     A label is skipped when it would overlap one already placed, so the view stays legible at every zoom. */
+  if (state.labels){
+    ctx.font = "500 12px Barlow, Helvetica, Arial, sans-serif"; ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+    const occ = new Map(), LH = 15, CS = 64;
+    const cells = (x, y, w, h, fn) => { const c0 = Math.floor(x / CS), c1 = Math.floor((x + w) / CS), r0 = Math.floor(y / CS), r1 = Math.floor((y + h) / CS); for (let cx = c0; cx <= c1; cx++) for (let cy = r0; cy <= r1; cy++) if (fn(cx + "," + cy) === false) return false; return true; };
+    const isFree = (x, y, w, h) => cells(x, y, w, h, key => { const a = occ.get(key); if (a) for (const r of a) if (x < r[0] + r[2] && x + w > r[0] && y < r[1] + r[3] && y + h > r[1]) return false; });
+    const occupy = (x, y, w, h) => { const r = [x, y, w, h]; cells(x, y, w, h, key => { let a = occ.get(key); if (!a){ a = []; occ.set(key, a); } a.push(r); }); };
+    let n = 0;
+    const labelled = new Set();
+    const put = (i, strong, force) => {
+      if (labelled.has(i) || n > 480) return;
+      const x = pos[2 * i] * k + tx, y = pos[2 * i + 1] * k + ty, r = radiusPx(i, k);
+      const cap = nbSet || zoom >= 9 ? 56 : 36;
+      const t = M.label[i].length > cap ? M.label[i].slice(0, cap - 1) + "…" : M.label[i];
+      const w = ctx.measureText(t).width + 4, lx = x + r + 2, ly = y - LH / 2;
+      if (lx > W || lx + w < 0 || ly > H || ly + LH < 0) return;
+      if (!force && !isFree(lx, ly, w, LH)) return;
+      labelled.add(i); n++; occupy(lx, ly, w, LH);
+      const f = dim && faded(i);
+      ctx.globalAlpha = f ? .3 : 1;
+      ctx.lineWidth = 3; ctx.strokeStyle = theme.halo; ctx.fillStyle = strong ? theme.ink : theme.ink2;
+      ctx.strokeText(t, lx + 2, y); ctx.fillText(t, lx + 2, y);
+    };
+    if (sel >= 0 && visible(sel)) put(sel, true, true);
+    if (hov >= 0 && visible(hov)) put(hov, true, true);
+    const byWeight = (a, b) => (dim ? (faded(a) - faded(b)) : 0) || (rw[b] - rw[a]) || (a - b);
+    order.filter(i => hubOfKind[M.kind[i]]).sort(byWeight).forEach(i => put(i, true));
+    if (sel >= 0 && nb.size <= 400) nb.forEach(i => { if (visible(i) && (nb.size <= 60 || radiusPx(i, k) >= 5)) put(i, false); });
+    order.filter(i => !hubOfKind[M.kind[i]] && (zoom >= 9 || radiusPx(i, k) >= 5)).sort(byWeight).forEach(i => put(i, false));
+    ctx.globalAlpha = 1;
+  }
+  $("#count").textContent = fmt(countVisible()) + " entities · " + fmt(inView) + " links in view";
+  $("#zval").textContent = Math.round(100 * zoom) + "%";
+}
+let visCache = {key: "", n: 0};
+function countVisible(){
+  const key = state.kindOn.join("") + (nbSet ? nbSet.size : "") + (state.dataset ? state.dataset.id : "");
+  if (visCache.key === key) return visCache.n;
+  let n = 0; for (let i = 0; i < N; i++) if (visible(i) && !(state.dataset && faded(i))) n++;
+  visCache = {key, n}; return n;
+}
+
+/* ---------- interaction ---------- */
+const tip = $("#tip");
+let ptrs = new Map(), dragging = false, moved = false, lastX = 0, lastY = 0, pinch = null, downAt = 0;
+cv.addEventListener("pointerdown", e => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (ptrs.size === 1){ dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY; downAt = performance.now(); cv.classList.add("drag"); }
+  else if (ptrs.size === 2){ const [a, b] = [...ptrs.values()]; pinch = {d: Math.hypot(a[0] - b[0], a[1] - b[1]), cx: (a[0] + b[0]) / 2, cy: (a[1] + b[1]) / 2}; }
+});
+cv.addEventListener("pointermove", e => {
+  if (ptrs.has(e.pointerId)) ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+  if (ptrs.size === 2 && pinch){
+    const [a, b] = [...ptrs.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); const r = cv.getBoundingClientRect();
+    zoomAt(d / pinch.d, (a[0] + b[0]) / 2 - r.left, (a[1] + b[1]) / 2 - r.top); pinch.d = d; return;
+  }
+  if (dragging && ptrs.size === 1){
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    if (Math.abs(e.clientX - lastX) + Math.abs(e.clientY - lastY) > 0){ if (moved || Math.hypot(dx, dy) > 2) moved = true; }
+    if (moved){ state.tx += dx; state.ty += dy; lastX = e.clientX; lastY = e.clientY; hideTip(); render(); }
+    return;
+  }
+  if (e.pointerType === "mouse"){
+    const r = cv.getBoundingClientRect(); const i = pick(e.clientX - r.left, e.clientY - r.top);
+    if (i !== state.hover){ state.hover = i; cv.classList.toggle("pick", i >= 0); render(); }
+    if (i >= 0) showTip(i, e.clientX, e.clientY); else hideTip();
+  }
+});
+function endPointer(e){
+  ptrs.delete(e.pointerId);
+  if (ptrs.size < 2) pinch = null;
+  if (ptrs.size === 0){
+    cv.classList.remove("drag");
+    if (dragging && !moved && performance.now() - downAt < 600){
+      const r = cv.getBoundingClientRect(); const i = pick(e.clientX - r.left, e.clientY - r.top);
+      if (e.pointerType !== "mouse"){ if (i >= 0) showTip(i, e.clientX, e.clientY); else hideTip(); }
+      select(i >= 0 ? i : -1, true);
+    }
+    dragging = false;
+  }
+}
+cv.addEventListener("pointerup", endPointer); cv.addEventListener("pointercancel", endPointer);
+cv.addEventListener("pointerleave", () => { if (!dragging){ state.hover = -1; hideTip(); render(); } });
+cv.addEventListener("wheel", e => { e.preventDefault(); const r = cv.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * (e.deltaMode === 1 ? .05 : .0016)), e.clientX - r.left, e.clientY - r.top); }, {passive: false});
+cv.addEventListener("dblclick", e => { const r = cv.getBoundingClientRect(); const i = pick(e.clientX - r.left, e.clientY - r.top); if (i >= 0){ select(i, true); zoomTo(i, Math.max(state.k * 3, baseK * 12)); } else zoomAt(2, e.clientX - r.left, e.clientY - r.top); });
+$("#zin").addEventListener("click", () => zoomAt(1.5, W / 2, H / 2));
+$("#zout").addEventListener("click", () => zoomAt(1 / 1.5, W / 2, H / 2));
+$("#fit").addEventListener("click", () => fit());
+document.addEventListener("keydown", e => { if (e.key === "Escape"){ if (!$("#results").hidden) closeResults(); else if (state.sel >= 0) select(-1, true); } });
+
+function showTip(i, x, y){
+  tip.textContent = "";
+  tip.append(el("div", {class: "k", text: kindName[M.kind[i]]}), el("div", {class: "t", text: M.label[i]}), el("div", {class: "i", text: M.iri[i]}));
+  tip.hidden = false;
+  const tw = tip.offsetWidth, th = tip.offsetHeight;
+  let px = x + 14, py = y + 16;
+  if (px + tw > window.innerWidth - 8) px = x - tw - 12;
+  if (py + th > window.innerHeight - 8) py = y - th - 12;
+  tip.style.left = Math.max(8, px) + "px"; tip.style.top = Math.max(8, py) + "px";
+}
+function hideTip(){ tip.hidden = true; }
+
+/* ---------- selection and the details panel ---------- */
+const side = $("#side");
+function select(i, user){
+  state.sel = i;
+  $("#nbbtn").disabled = i < 0;
+  if (i < 0 && nbSet){ state.neighbourhood = false; $("#nbbtn").setAttribute("aria-pressed", "false"); applyNeighbourhood(); }
+  else if (nbSet){ applyNeighbourhood(); fit(); }
+  render(); showPanel();
+  if (user){ try { history.replaceState(null, "", i >= 0 ? "#" + encodeURIComponent(M.iri[i]) : location.pathname + location.search); } catch (err) { /* sandboxed */ } }
+}
+/* Neighbourhood mode: the selected entity in the middle and its neighbours on rings around it, grouped by type,
+   with every link between them drawn and named. The layout's positions are kept aside and restored on exit. */
+let layoutPos = null;
+function applyNeighbourhood(){
+  if (!state.neighbourhood || state.sel < 0){
+    nbSet = null;
+    if (layoutPos){ state.pos = layoutPos; layoutPos = null; buildGrid(); }
+    visCache.key = ""; rebuildBundles(); return;
+  }
+  const c = state.sel;
+  nbSet = new Set([c]);
+  outE[c].forEach(e => nbSet.add(E[3 * e + 2])); inE[c].forEach(e => nbSet.add(E[3 * e]));
+  if (!layoutPos) layoutPos = state.pos;
+  const p = Float32Array.from(layoutPos), cx = layoutPos[2 * c], cy = layoutPos[2 * c + 1];
+  const ids = [...nbSet].filter(i => i !== c).sort((a, b) => (M.kind[a] - M.kind[b]) || M.label[a].localeCompare(M.label[b]));
+  for (let j = 0, ring = 0; j < ids.length; ring++){
+    const r = 90 + 64 * ring, n = Math.min(Math.max(1, Math.floor(2 * Math.PI * r / 15)), ids.length - j);
+    for (let t = 0; t < n; t++){ const a = -Math.PI / 2 + 2 * Math.PI * t / n + (ring % 2) * Math.PI / n, i = ids[j + t]; p[2 * i] = cx + r * Math.cos(a); p[2 * i + 1] = cy + r * Math.sin(a); }
+    j += n;
+  }
+  state.pos = p; buildGrid();
+  visCache.key = ""; rebuildBundles();
+}
+$("#nbbtn").addEventListener("click", () => {
+  state.neighbourhood = !state.neighbourhood; $("#nbbtn").setAttribute("aria-pressed", String(state.neighbourhood));
+  applyNeighbourhood(); render();
+  if (state.neighbourhood) fit(); else if (state.sel >= 0){ baseK = fitView().k; zoomTo(state.sel, baseK * 12); }
+});
+function goBtn(i){
+  const b = el("button", {type: "button", class: "go", text: M.label[i]});
+  b.addEventListener("click", () => { select(i, true); zoomTo(i); });
+  return b;
+}
+function linkList(edgeIdx, otherOf, limit){
+  const groups = new Map();
+  edgeIdx.forEach(e => { const p = M.preds[E[3 * e + 1]]; if (!groups.has(p)) groups.set(p, []); groups.get(p).push(otherOf(e)); });
+  const frag = document.createDocumentFragment();
+  [...groups.entries()].sort((a, b) => b[1].length - a[1].length).forEach(([p, ids]) => {
+    frag.append(el("p", {class: "pred", text: p + (ids.length > 1 ? "  × " + fmt(ids.length) : "")}));
+    const ul = el("ul");
+    const show = (from, to) => { ids.slice(from, to).forEach(i => ul.append(el("li", null, el("span", {class: "dot", style: "background:var(--k" + M.kind[i] + ")"}), goBtn(i)))); };
+    show(0, limit); frag.append(ul);
+    if (ids.length > limit){
+      const more = el("button", {type: "button", class: "more", text: "Show " + fmt(Math.min(ids.length, 300) - limit) + " more" + (ids.length > 300 ? " (of " + fmt(ids.length) + ")" : "")});
+      more.addEventListener("click", () => { show(limit, 300); more.remove(); });
+      frag.append(more);
+    }
+  });
+  return frag;
+}
+function showPanel(){
+  side.textContent = "";
+  const i = state.sel;
+  if (i < 0){ showOverview(); return; }
+  const kind = kindName[M.kind[i]];
+  const h = el("h2", null, el("span", {class: "dot", style: "background:var(--k" + M.kind[i] + ")"}), M.label[i]);
+  side.append(el("p", {class: "k", text: kind}), h);
+  const iri = M.iri[i];
+  side.append(/^https?:\/\//.test(iri) ? el("p", {class: "iri"}, el("a", {href: iri, target: "_blank", rel: "noopener", text: iri})) : el("p", {class: "iri", text: iri}));
+  if (M.types[i].length) side.append(el("p", {class: "cmt", text: "rdf:type " + M.types[i].join(", ")}));
+  const acts = el("div", {class: "acts"});
+  const z = el("button", {type: "button", class: "tb", text: "Zoom to"}); z.addEventListener("click", () => zoomTo(i, Math.max(state.k, baseK * 12))); acts.append(z);
+  const ds = M.datasets.filter(d => M.src[i] & d.bit);
+  ds.forEach(d => { const b = el("button", {type: "button", class: "tb"}, el("span", {class: "dot", style: "width:8px;height:8px;border-radius:50%;background:var(--d" + d.idx + ")"}), "Highlight " + d.id); b.addEventListener("click", () => selectDataset(d.id, true)); acts.append(b); });
+  side.append(acts);
+  if (M.attrs[i].length){
+    side.append(el("h3", {text: "Properties"}, el("span", {class: "n", text: fmt(M.attrs[i].length)})));
+    const dl = el("dl"); M.attrs[i].forEach(([p, v]) => dl.append(el("dt", {text: M.preds[p]}), el("dd", {text: v}))); side.append(dl);
+  }
+  if (outE[i].length){ side.append(el("h3", {text: "Links from this entity"}, el("span", {class: "n", text: fmt(outE[i].length)}))); side.append(linkList(outE[i], e => E[3 * e + 2], 20)); }
+  if (inE[i].length){ side.append(el("h3", {text: "Links to this entity"}, el("span", {class: "n", text: fmt(inE[i].length)}))); side.append(linkList(inE[i], e => E[3 * e], 20)); }
+}
+function showOverview(){
+  side.append(el("p", {class: "k", text: "The whole graph"}), el("h2", {text: M.meta.label}));
+  const st = el("div", {class: "stat"});
+  [["Entities", fmt(N)], ["Links", fmt(EN)], ["Literal properties", fmt(M.meta.literals)], ["Blank nodes", fmt(M.meta.bnodes)], ["External resources", fmt(M.meta.externals)], ["Entity types", M.legend.reduce((n, g) => n + g.kinds.length, 0)]]
+    .forEach(([k, v]) => st.append(el("div", null, el("b", {text: String(v)}), el("span", {text: k}))));
+  side.append(st);
+  if (state.dataset){
+    const d = state.dataset;
+    side.append(el("p", {class: "cmt", text: "Highlighting the entities that cite " + d.id + " with dcterms:source (" + fmt(countVisible()) + "), its dataset record and the derivations that use it. Everything else is faded."}));
+  } else side.append(el("p", {class: "cmt", text: "Click a dot for its properties and links. Hubs (districts, quarters, dataset records, derivations, observable properties) are labelled; other labels appear as you zoom in. Choose a dataset above to see what it contributes."}));
+  side.append(el("h3", {text: "Most connected entities"}));
+  const top = [...Array(N).keys()].sort((a, b) => M.deg[b] - M.deg[a]).slice(0, 14);
+  const ul = el("ul"); top.forEach(i => ul.append(el("li", null, el("span", {class: "dot", style: "background:var(--k" + M.kind[i] + ")"}), goBtn(i), el("span", {class: "n", style: "color:var(--ink-3);font:500 12px var(--f-mono);margin-left:auto;white-space:nowrap", text: fmt(M.deg[i]) + " links"})))); side.append(ul);
+}
+
+/* ---------- dataset tabs ---------- */
+const tabsEl = $("#tabs"), tabBtn = {};
+function addTab(id, name, idx, title){
+  const b = el("button", {type: "button", role: "tab", class: "tab" + (idx ? "" : " all"), id: "tab-" + id, "data-id": id, "aria-selected": "false", tabindex: "-1", title}, el("span", {class: "dot"}), name);
+  if (idx) b.style.setProperty("--c", "var(--d" + idx + ")");
+  tabBtn[id] = b; tabsEl.append(b);
+}
+addTab("all", "All entities", 0, "Nothing highlighted");
+M.datasets.forEach(d => addTab(d.id, d.id, d.idx, d.topic));
+tabsEl.addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) selectDataset(b.dataset.id, true); });
+tabsEl.addEventListener("keydown", e => {
+  const ids = ["all", ...M.datasets.map(d => d.id)]; let i = ids.indexOf(state.dataset ? state.dataset.id : "all");
+  if (e.key === "ArrowRight") i = (i + 1) % ids.length; else if (e.key === "ArrowLeft") i = (i - 1 + ids.length) % ids.length; else if (e.key === "Home") i = 0; else if (e.key === "End") i = ids.length - 1; else return;
+  e.preventDefault(); selectDataset(ids[i], true); tabBtn[ids[i]].focus();
+});
+function selectDataset(id, user){
+  const d = M.datasets.find(x => x.id === id) || null;
+  state.dataset = d; state.datasetExtra = new Set();
+  if (d){
+    state.datasetExtra.add(d.node);
+    inE[d.node].forEach(e => { if (M.preds[E[3 * e + 1]] === "prov:used") state.datasetExtra.add(E[3 * e]); });
+    outE[d.node].forEach(e => { if (M.preds[E[3 * e + 1]] !== "dcterms:source") state.datasetExtra.add(E[3 * e + 2]); });
+  }
+  visCache.key = ""; rebuildBundles();
+  Object.keys(tabBtn).forEach(k => { const s = k === (d ? d.id : "all"); tabBtn[k].setAttribute("aria-selected", String(s)); tabBtn[k].tabIndex = s ? 0 : -1; });
+  render(); if (state.sel < 0) showPanel();
+}
+
+/* ---------- search ---------- */
+const q = $("#q"), results = $("#results");
+const lowerLabel = M.label.map(s => s.toLowerCase()), lowerIri = M.iri.map(s => s.toLowerCase());
+let cur = -1, hits = [];
+function closeResults(){ results.hidden = true; q.setAttribute("aria-expanded", "false"); cur = -1; }
+function runSearch(){
+  const s = q.value.trim().toLowerCase();
+  results.textContent = ""; hits = [];
+  if (s.length < 2){ closeResults(); return; }
+  const starts = [], within = [];
+  let total = 0;
+  for (let i = 0; i < N; i++){
+    const a = lowerLabel[i].indexOf(s), b = a < 0 ? lowerIri[i].indexOf(s) : -1;
+    if (a < 0 && b < 0) continue;
+    total++;
+    if (starts.length + within.length >= 600) continue;
+    if (a === 0) starts.push(i); else within.push(i);
+  }
+  const rank = (a, b) => (hubOfKind[M.kind[b]] - hubOfKind[M.kind[a]]) || (M.deg[b] - M.deg[a]) || (a - b);
+  hits = starts.sort(rank).concat(within.sort(rank)).slice(0, 40);
+  if (!hits.length){ results.append(el("div", {class: "more", text: "No entity matches."})); }
+  hits.forEach(i => {
+    const b = el("button", {type: "button", role: "option", "data-i": i}, el("span", {class: "dot", style: "background:var(--k" + M.kind[i] + ")"}), el("span", {text: M.label[i]}), el("span", {class: "k", text: kindName[M.kind[i]]}));
+    b.addEventListener("click", () => { pickResult(i); });
+    results.append(b);
+  });
+  if (total > hits.length) results.append(el("div", {class: "more", text: "Showing " + hits.length + " of " + fmt(total) + " matches; keep typing to narrow."}));
+  results.hidden = false; q.setAttribute("aria-expanded", "true"); cur = -1;
+}
+function pickResult(i){ closeResults(); select(i, true); zoomTo(i, Math.max(state.k, baseK * 12)); }
+q.addEventListener("input", runSearch);
+q.addEventListener("focus", () => { if (q.value.trim().length >= 2) runSearch(); });
+q.addEventListener("keydown", e => {
+  const items = results.querySelectorAll("button");
+  if (e.key === "ArrowDown" && items.length){ e.preventDefault(); cur = (cur + 1) % items.length; items.forEach((b, j) => b.classList.toggle("cur", j === cur)); items[cur].scrollIntoView({block: "nearest"}); }
+  else if (e.key === "ArrowUp" && items.length){ e.preventDefault(); cur = (cur - 1 + items.length) % items.length; items.forEach((b, j) => b.classList.toggle("cur", j === cur)); items[cur].scrollIntoView({block: "nearest"}); }
+  else if (e.key === "Enter"){ e.preventDefault(); if (items.length){ pickResult(+items[Math.max(0, cur)].dataset.i); } }
+  else if (e.key === "Escape"){ closeResults(); }
+});
+document.addEventListener("click", e => { if (!e.target.isConnected) return; if (!e.target.closest(".search")) closeResults(); if (!e.target.closest("#relbtn,#relpop")) closeRel(); });
+
+/* ---------- relations filter ---------- */
+const relpop = $("#relpop"), relbtn = $("#relbtn");
+function relCount(){ const on = M.relations.filter(r => state.predOn[predIdx[r.p]]).length; $("#relcount").textContent = on === M.relations.length ? "" : on + "/" + M.relations.length; }
+function buildRel(){
+  relpop.textContent = "";
+  const row = el("div", {class: "row"}, "Links drawn:");
+  const all = el("button", {type: "button", text: "all"}), none = el("button", {type: "button", text: "none"});
+  const setAll = v => { M.relations.forEach(r => state.predOn[predIdx[r.p]] = v); relpop.querySelectorAll("input").forEach(cb => cb.checked = v); relCount(); rebuildBundles(); render(); };
+  all.addEventListener("click", () => setAll(true));
+  none.addEventListener("click", () => setAll(false));
+  row.append(all, none); relpop.append(row);
+  M.relations.forEach(r => {
+    const cb = el("input", {type: "checkbox", id: "rel-" + r.p.replace(/\W/g, "_")}); cb.checked = !!state.predOn[predIdx[r.p]];
+    cb.addEventListener("change", () => { state.predOn[predIdx[r.p]] = cb.checked; relCount(); rebuildBundles(); render(); });
+    relpop.append(el("label", {for: cb.id}, cb, el("code", {text: r.p}), el("span", {class: "n", text: fmt(r.n)})));
+  });
+  relCount();
+}
+function closeRel(){ relpop.hidden = true; relbtn.setAttribute("aria-expanded", "false"); }
+relbtn.addEventListener("click", () => { const open = relpop.hidden; relpop.hidden = !open; relbtn.setAttribute("aria-expanded", String(open)); });
+buildRel();
+
+/* ---------- legend: entity types ---------- */
+const legend = $("#legend");
+M.legend.forEach(g => {
+  const box = el("div", {class: "grp2"}, el("div", {class: "gh", text: g.group}));
+  g.kinds.forEach(k => {
+    const idx = M.kinds.indexOf(k.name);
+    const cb = el("input", {type: "checkbox", id: "kind-" + idx}); cb.checked = true;
+    cb.addEventListener("change", () => { state.kindOn[idx] = cb.checked; visCache.key = ""; rebuildBundles(); render(); });
+    box.append(el("label", {for: cb.id}, cb, el("span", {class: "sw" + (k.hub ? " hub" : ""), style: "background:var(--k" + idx + ");color:var(--k" + idx + ")"}), k.name, el("span", {class: "n", text: fmt(k.n)})));
+  });
+  legend.append(box);
+});
+(function(){
+  const n = name => { for (const g of M.legend) for (const k of g.kinds) if (k.name === name) return k.n; return 0; };
+  legend.append(el("p", {class: "note", text: "Dots with a ring are hubs and keep their label at every zoom; other labels appear as you zoom in, and relation names and arrowheads once few enough links are in view. " +
+    "Links that leave a cluster (a district with its observations, a quarter with its instants, a dataset record with its distribution and series) are drawn as one line per cluster and target, as wide as the number of links it stands for; " +
+    "the individual links appear for the entity you point at or select, and for everything in neighbourhood mode. " +
+    "The structured layout puts the knowledge-graph record and its " + n("Dataset record") + " dataset records in the middle, the " + n("Quarter") + " quarters on the inner ring, the " + n("WelshLAD") +
+    " Welsh districts with their observations and population figures on the next ring, and the " + n("EnglishLAD") + " English districts with their density series on the outer ring. The force-directed layout is igraph's DrL arrangement of the same nodes and links, with the same bundling."}));
+})();
+
+/* ---------- layout switch ---------- */
+function setLayout(which, animate){
+  if (state.layout === which) return;
+  state.layout = which;
+  $("#lay-s").setAttribute("aria-pressed", String(which === "S")); $("#lay-f").setAttribute("aria-pressed", String(which === "F"));
+  const to = Float32Array.from(which === "S" ? M.posS : M.posF);
+  if (nbSet){ layoutPos = to; applyNeighbourhood(); fit(); return; }
+  if (!animate || reduceMotion){ state.pos = to; buildGrid(); fit(); return; }
+  const from = state.pos, t0 = performance.now(), cur2 = new Float32Array(from.length);
+  const fromView = {k: state.k, tx: state.tx, ty: state.ty}, toView = fitView(to);
+  const step = now => {
+    const t = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - t, 3);
+    for (let j = 0; j < from.length; j++) cur2[j] = from[j] + (to[j] - from[j]) * e;
+    state.pos = cur2; state.k = fromView.k + (toView.k - fromView.k) * e; state.tx = fromView.tx + (toView.tx - fromView.tx) * e; state.ty = fromView.ty + (toView.ty - fromView.ty) * e;
+    draw();
+    if (t < 1) requestAnimationFrame(step); else { state.pos = to; baseK = toView.k; buildGrid(); render(); }
+  };
+  requestAnimationFrame(step);
+}
+$("#lay-s").addEventListener("click", () => setLayout("S", true));
+$("#lay-f").addEventListener("click", () => setLayout("F", true));
+$("#lblbtn").addEventListener("click", () => { state.labels = !state.labels; $("#lblbtn").setAttribute("aria-pressed", String(state.labels)); render(); });
+
+/* ---------- header, footer, start ---------- */
+$("#eyebrow").textContent = M.meta.label + " · " + fmt(M.meta.triples) + " triples · " + fmt(N) + " entities · " + fmt(EN) + " links";
+(function(){
+  const f = $("#foot");
+  f.append("Every entity and link on this page is read from ", el("code", {text: "index.ttl"}), " in ", el("a", {href: "https://github.com/Naeima/cleets", target: "_blank", rel: "noopener", text: "github.com/Naeima/cleets"}),
+    M.meta.commit ? " at commit " + M.meta.commit + " (" + M.meta.commitDate + ")" : "", ". Classes, properties and SHACL shapes are left out; they are drawn on the ", M.meta.mapUrl ? el("a", {href: M.meta.mapUrl, target: "_blank", rel: "noopener", text: "dataset map"}) : "dataset map", ". Page built " + M.meta.built + ".");
+  if (M.meta.mapUrl){ const l = $("#lede"); l.append(" The ontology itself is on the ", el("a", {href: M.meta.mapUrl, target: "_blank", rel: "noopener", text: "dataset map"}), "."); }
+})();
+buildGrid();
+rebuildBundles();
+resize();
+fit();
+if (window.ResizeObserver) new ResizeObserver(() => {
+  const r = stage.getBoundingClientRect();
+  if (Math.round(r.width) === W && Math.round(r.height) === H) return;
+  /* keep the world point at the centre of the view where it is, and the zoom level relative to the fit */
+  const zoom = state.k / baseK, cx = (W / 2 - state.tx) / state.k, cy = (H / 2 - state.ty) / state.k;
+  resize();
+  baseK = fitView().k; state.k = baseK * zoom; state.tx = W / 2 - state.k * cx; state.ty = H / 2 - state.k * cy; render();
+}).observe(stage);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+selectDataset("all", false);
+try { const h = decodeURIComponent((location.hash || "").slice(1)); if (h){ const i = M.iri.indexOf(h); if (i >= 0){ select(i, false); zoomTo(i, baseK * 12); } } } catch (err) { /* ignore */ }
+window.__entities = {state, M, select, selectDataset, setLayout, fit, zoomTo, pick, countVisible, render: () => { draw(); }};
+})();
+</script>
