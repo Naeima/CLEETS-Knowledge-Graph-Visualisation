@@ -10,11 +10,17 @@ With GitHub Pages enabled for this repository (branch `main`, root folder) the p
 
 The figures below describe the graph at commit `b4c61d3` of `index.ttl` (16 September 2026, CLEETS-KG v1.3.0, 96,479 triples), the commit recorded in `build/source.txt`. The pages print the commit and build date they were generated from in their footers.
 
+![The dataset map with EVCI9001 traced: the tabs, the reading of the dataset, and the ontology in VOWL notation with the dataset's classes, properties and records highlighted](docs/images/dataset-map-vowl-graph.png)
+
+![The entity explorer at full extent: dataset records in the middle, quarters on the inner ring, Welsh districts with their discs of observations, English districts on the outer ring](docs/images/entity-explorer.png)
+
 ## The dataset map
 
 The map answers one question: which dataset contributes which part of the graph, and how those parts meet in the ontology. Selecting a dataset tab highlights the individuals it populates, the classes and properties they use, the derivations that consume it and the datasets those derivations combine it with. The eight datasets, as recorded in the graph, are the Department for Transport and DVLA vehicle licensing tables VEH0132 (licensed ultra low emission vehicles) and VEH0105 (licensed vehicles), the Department for Transport and OZEV charging-device statistics EVCI9001, the Welsh Government's StatsWales mid-year population estimates, the ONS population density series for England and Wales, the ONS Open Geography Portal district codes and names, the Welsh Government's WIMD 2025 income-domain deciles and the ONS LSOA-to-district lookup, all under the Open Government Licence v3.0.
 
 The default view draws the ontology in VOWL notation [1] as rendered by WebVOWL [2]: classes as circles that grow with their number of individuals, datatypes as rectangles, object and datatype properties as labelled arrows, subclass relations dotted with a hollow arrowhead, disjointness dashed, equivalent classes as one circle carrying both names, and a property end with no declared domain or range attached to its own `owl:Thing`. The colours are those of WebVOWL's stylesheet (classes `#acf`, datatype properties `#9c6`, datatypes `#fc3`); external classes use the darker blue of the specification, `#36c`, which WebVOWL's current stylesheet lists but leaves commented out. The eight dataset records and four derivation activities are an addition to the notation, drawn as rounded boxes and diamonds in the dataset colours and connected with `dcterms:source`, `prov:used` and `prov:wasGeneratedBy`. At the commit above the view holds 13 classes, 2 external classes, 8 object properties, 13 datatype properties, 8 subclass and 7 disjointness relations, and 10,919 individuals counted into the class sizes.
+
+![The schematic view: source datasets on the left, grouped individuals in the middle, ontology classes and reused vocabularies on the right, with EVCI9001 traced](docs/images/dataset-map-schematic.png)
 
 The layout is force-directed with d3 [3]. The settled positions are baked into the page (`build/layout/vowl_pos.json`) so that it opens in the same arrangement every time and still renders if the d3 script cannot be loaded; nodes can be dragged and pinned, and the layout can be re-run from scratch. The second view is a schematic: a fixed wiring diagram of the same facts with the datasets on the left, the grouped individuals in the middle and the ontology on the right, which is easier to read in print and is drawn with inline SVG only. A side panel gives the details of whatever is selected, with the figures it quotes computed from the Turtle at build time.
 
@@ -25,6 +31,12 @@ The explorer draws the ABox: 17,068 nodes (16,729 subjects of the graph that are
 Rather than a force-directed layout, which for this graph produces a hairball around five hub nodes of degree 2,870 to 6,128, the default layout is structured by what the entities are. The knowledge-graph record and the eight dataset records sit in the middle with their distributions, series and licences; the derivations sit between the datasets they combine; the 67 quarters form the inner ring in chronological order, each with its two `time:Instant` bounds; the 22 Welsh districts form the next ring, each with a disc of its observations, source-row fingerprints and population figures packed in a Vogel spiral [5] and ordered by series and quarter; and the 296 English districts form the outer ring, each with its density series on a short radial comb. A force-directed alternative, igraph's DrL layout [6, 7], is kept as a toggle for comparison.
 
 Links that leave a cluster (a district with its disc, a quarter with its instants, a dataset record with its satellites) are drawn as one line per cluster and target, as wide as the number of links it stands for. Drawing the 35,201 individual links that converge on the central hubs painted the centre a uniform grey at every zoom level; aggregating them into 2,512 bundles keeps the structure visible. The individual links are always drawn for the entity under the pointer and for the selected entity, and in neighbourhood mode, which places the selected entity in the middle with its neighbours on rings around it, every link named with its predicate.
+
+![VEH0132 highlighted in the explorer: its observations in every Welsh disc, everything else faded](docs/images/entity-explorer-dataset.png)
+
+![Cardiff selected: the view zoomed to its disc, its properties and its links grouped by predicate in the side panel](docs/images/entity-explorer-entity.png)
+
+![Neighbourhood mode around one derived observation: the entity in the middle, its district, quarter, observable property, derivation, source datasets and source-row fingerprint around it, every link named](docs/images/entity-explorer-neighbourhood.png)
 
 The dataset tabs fade everything except the entities that cite the chosen dataset with `dcterms:source`, together with its record and the derivations that use it. The legend toggles the 26 entity types, and the relations menu toggles the 26 predicates that occur between entities. Search matches labels and IRIs; opening the page with `#` followed by an entity's IRI selects it.
 
@@ -49,6 +61,7 @@ The build scripts can also emit the pages in the form expected by the claude.ai 
 
 ```
 README.md
+docs/images/                    screenshots used above
 index.html                      landing page
 dataset-map.html                generated
 entity-explorer.html            generated
