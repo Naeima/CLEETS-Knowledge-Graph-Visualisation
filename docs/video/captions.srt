@@ -1,0 +1,243 @@
+1
+00:00:00,700 --> 00:00:05,309
+This is a short guide to the CLEETS knowledge graph visualisations:
+
+2
+00:00:05,359 --> 00:00:12,056
+two web pages that let you read CLEETS-KG without reading its Turtle file.
+
+3
+00:00:12,106 --> 00:00:18,782
+CLEETS-KG is published as a Turtle file: 96,479 triples, about six megabytes of text.
+
+4
+00:00:18,832 --> 00:00:24,480
+Every fact is in there, but a file like this shows one triple at a time.
+
+5
+00:00:24,530 --> 00:00:29,070
+To see how the eight source datasets meet in the ontology,
+
+6
+00:00:29,120 --> 00:00:32,473
+or to find every observation about Cardiff,
+
+7
+00:00:32,523 --> 00:00:37,458
+you would have to write queries or scroll for a very long time.
+
+8
+00:00:37,508 --> 00:00:45,896
+The two pages do that reading for you.
+
+9
+00:00:45,946 --> 00:00:48,506
+The landing page offers two views.
+
+10
+00:00:48,556 --> 00:00:52,421
+The dataset map shows the ontology and its sources.
+
+11
+00:00:52,471 --> 00:00:56,643
+The entity explorer shows every individual in the data.
+
+12
+00:00:56,693 --> 00:01:00,097
+Both are generated from the same Turtle file,
+
+13
+00:01:00,147 --> 00:01:07,863
+and every figure they show was cross-checked against it with SPARQL.
+
+14
+00:01:07,913 --> 00:01:14,561
+The dataset map draws the ontology in VOWL notation, the same notation used by WebVOWL.
+
+15
+00:01:14,611 --> 00:01:20,643
+Circles are classes, sized by the number of individuals they have in the graph.
+
+16
+00:01:20,693 --> 00:01:22,568
+Rectangles are datatypes.
+
+17
+00:01:22,618 --> 00:01:26,340
+Arrows are properties, labelled with their names.
+
+18
+00:01:26,390 --> 00:01:33,269
+The coloured boxes are the dataset records and the diamonds are the derivation activities.
+
+19
+00:01:33,319 --> 00:01:44,429
+These are an addition to the notation: they show where the data in each class comes from.
+
+20
+00:01:44,479 --> 00:01:48,664
+Select a dataset and the map highlights what it contributes.
+
+21
+00:01:48,714 --> 00:01:54,805
+The public charging device statistics (EVCI9001) become 594 charger-count observations,
+
+22
+00:01:54,855 --> 00:01:56,852
+one per district and quarter.
+
+23
+00:01:56,902 --> 00:02:01,298
+The reading at the top says where the dataset meets the others:
+
+24
+00:02:01,348 --> 00:02:07,015
+with the vehicle licensing table (VEH0132) in the keepers-per-charger derivation,
+
+25
+00:02:07,065 --> 00:02:12,520
+and with the StatsWales population in chargers per hundred thousand residents.
+
+26
+00:02:12,570 --> 00:02:21,796
+Click any node for its definition, its restrictions, and the shapes that validate it.
+
+27
+00:02:21,846 --> 00:02:28,321
+The schematic view is the same information as a fixed wiring diagram: the sources on the left,
+
+28
+00:02:28,371 --> 00:02:33,111
+the grouped individuals in the middle, and the ontology on the right.
+
+29
+00:02:33,161 --> 00:02:40,596
+It does not move, so it is the view to use in print or in a slide.
+
+30
+00:02:40,646 --> 00:02:46,907
+The entity explorer draws all 17,068 individuals and the 51,838 links between them.
+
+31
+00:02:46,957 --> 00:02:50,025
+The layout follows what the entities are.
+
+32
+00:02:50,075 --> 00:02:55,728
+The knowledge-graph record and the eight dataset records sit in the middle.
+
+33
+00:02:55,778 --> 00:02:59,225
+The 67 quarters form the inner ring, in order.
+
+34
+00:02:59,275 --> 00:03:02,419
+The 22 Welsh districts form the next ring,
+
+35
+00:03:02,469 --> 00:03:06,981
+each with a disc of its observations and population figures.
+
+36
+00:03:07,031 --> 00:03:13,292
+The 296 English districts form the outer ring with their population density series.
+
+37
+00:03:13,342 --> 00:03:22,476
+Links that leave a cluster are drawn as bundles, as wide as the number of links they stand for.
+
+38
+00:03:22,526 --> 00:03:26,655
+Selecting a dataset fades everything it does not touch.
+
+39
+00:03:26,705 --> 00:03:31,215
+With the battery-electric vehicle counts (VEH0132) selected,
+
+40
+00:03:31,265 --> 00:03:36,534
+you see at once that they sit in every Welsh district for 57 quarters,
+
+41
+00:03:36,584 --> 00:03:40,789
+between late 2011 and late 2025, and nowhere in England.
+
+42
+00:03:40,839 --> 00:03:50,116
+The derived keeperships per thousand residents and keepers per charger light up with them.
+
+43
+00:03:50,166 --> 00:03:54,371
+Search finds any entity by its label or its identifier (IRI).
+
+44
+00:03:54,421 --> 00:04:00,789
+Selecting Cardiff zooms to its disc and opens its record: the district code, the two labels,
+
+45
+00:04:00,839 --> 00:04:03,231
+and 289 links grouped by predicate.
+
+46
+00:04:03,281 --> 00:04:07,416
+Every link is a button, so you can walk the graph from here.
+
+47
+00:04:07,466 --> 00:04:15,717
+This one is the number of public charge points per hundred thousand residents in Cardiff in the fourth quarter of 2019:
+
+48
+00:04:15,767 --> 00:04:21,449
+twelve point six, with nine links of its own.
+
+49
+00:04:21,499 --> 00:04:27,499
+Neighbourhood mode isolates the selected entity with its neighbours and names every link.
+
+50
+00:04:27,549 --> 00:04:33,005
+This derived observation has its district, its quarter, the property it observes,
+
+51
+00:04:33,055 --> 00:04:37,832
+the derivation that produced it, the two datasets it was computed from,
+
+52
+00:04:37,882 --> 00:04:40,415
+and the fingerprint of the source row.
+
+53
+00:04:40,465 --> 00:04:45,241
+This is the view that answers the question a Turtle file makes hardest:
+
+54
+00:04:45,291 --> 00:04:51,249
+what is connected to this thing, and how.
+
+55
+00:04:51,299 --> 00:04:57,243
+The legend switches entity types on and off, the relations menu does the same for predicates,
+
+56
+00:04:57,293 --> 00:05:02,399
+and the layout toggle swaps the structured arrangement for a force-directed one.
+
+57
+00:05:02,449 --> 00:05:06,266
+Everything you see is drawn from the data at a fixed commit,
+
+58
+00:05:06,316 --> 00:05:13,129
+which is printed at the foot of each page.
+
+59
+00:05:13,179 --> 00:05:16,019
+Both pages, the scripts that build them,
+
+60
+00:05:16,069 --> 00:05:20,427
+and the checks that verify them are in the GitHub repository.
+
+61
+00:05:20,477 --> 00:05:28,613
+Rebuilding from the Turtle file takes about a minute, so the pages can follow the graph as it grows.

@@ -10,6 +10,12 @@ With GitHub Pages enabled for this repository (branch `main`, root folder) the p
 
 The figures below describe the graph at commit `b4c61d3` of `index.ttl` (16 September 2026, CLEETS-KG v1.3.0, 96,479 triples), the commit recorded in `build/source.txt`. The pages print the commit and build date they were generated from in their footers.
 
+## Tutorial video
+
+[![Tutorial video: CLEETS knowledge graph visualisations](docs/video/poster.png)](https://naeima.github.io/CLEETS-Knowledge-Graph-Visualisation/docs/video/cleets-kg-visualisation-tutorial.mp4)
+
+A five-and-a-half-minute guide, [`docs/video/cleets-kg-visualisation-tutorial.mp4`](docs/video/cleets-kg-visualisation-tutorial.mp4) (1080p, 43 MB), that walks through both pages: what the Turtle file looks like and why it is hard to read, the dataset map in VOWL notation and as a schematic, and the entity explorer with its dataset highlighting, search, neighbourhood mode and filters. Captions are burned in and also provided as [`docs/video/captions.srt`](docs/video/captions.srt); the script with the start time of every sentence is in [`docs/video/narration-script.md`](docs/video/narration-script.md). The narration is in the author's voice, synthesised from her own recordings with an open voice model (XTTS v2) and checked sentence by sentence against the script by automatic transcription.
+
 ![The dataset map with EVCI9001 traced: the tabs, the reading of the dataset, and the ontology in VOWL notation with the dataset's classes, properties and records highlighted](docs/images/dataset-map-vowl-graph.png)
 
 ![The entity explorer at full extent: dataset records in the middle, quarters on the inner ring, Welsh districts with their discs of observations, English districts on the outer ring](docs/images/entity-explorer.png)
@@ -62,6 +68,7 @@ The build scripts can also emit the pages in the form expected by the claude.ai 
 ```
 README.md
 docs/images/                    screenshots used above
+docs/video/                     the tutorial video, its captions and timed script
 index.html                      landing page
 dataset-map.html                generated
 entity-explorer.html            generated
